@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0b1120">
+<title>Тачка-Кликер</title>
+<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #e6ecff;
+    background: radial-gradient(900px 600px at 50% -20%, #1e2a4a 0%, #0d1425 50%, #06090f 100%);
+    display: flex; flex-direction: column;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(96,165,250,.07), transparent 50%),
+      radial-gradient(circle at 85% 80%, rgba(245,158,11,.05), transparent 50%);
+  }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 14px 4px; z-index: 5; gap: 8px; flex-wrap: wrap;
+  }
+  .money-box {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.03));
+    padding: 8px 14px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow: 0 6px 22px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);
+    font-weight: 800; font-size: 17px;
+  }
+  .money-box .money { color: #fbbf24; font-variant-numeric: tabular-nums; }
+  .money-box .rub { color: #fbbf24; opacity: .7; font-size: 14px; }
+  .rates-box {
+    display: flex; flex-direction: column; gap: 2px;
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    padding: 6px 12px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    font-size: 12px; font-weight: 700; color: #94a3b8;
+    min-width: 128px;
+  }
+  .rates-box .row { display: flex; justify-content: space-between; gap: 8px; }
+  .rates-box b { color: #4ade80; font-size: 12.5px; }
+  .rates-box b.sec { color: #7dd3fc; }
+  .rates-box b.boosted { color: #fb923c; text-shadow: 0 0 10px rgba(251,146,60,.5); }
+  .boost-bar { padding: 8px 14px 0; z-index: 5; }
+  .boost-btn {
+    width: 100%;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    border: none; border-radius: 16px;
+    cursor: pointer;
+    background: linear-gradient(120deg, #f97316 0%, #ef4444 60%, #dc2626 100%);
+    color: #fff;
+    font: inherit; font-weight: 800;
+    box-shadow: 0 3px 0 #7c1d0a, 0 8px 22px rgba(239,68,68,.4), 0 0 30px rgba(249,115,22,.35), inset 0 1px 0 rgba(255,255,255,.4);
+    transition: transform .1s, box-shadow .1s, filter .15s;
+    position: relative; overflow: hidden;
+  }
+  .boost-btn::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.25) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: shine 3s infinite;
+  }
+  @keyframes shine {
+    0% { transform: translateX(-100%); }
+    60% { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+  }
+  .boost-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #7c1d0a, 0 4px 12px rgba(239,68,68,.3); }
+  .boost-btn:disabled { opacity: .6; cursor: wait; animation: none; }
+  .boost-btn:disabled::before { animation: none; }
+  .boost-ico { font-size: 22px; filter: drop-shadow(0 0 8px rgba(255,255,255,.6)); }
+  .boost-main { flex: 1; text-align: left; line-height: 1.15; }
+  .boost-text { font-size: 14px; display: block; }
+  .boost-sub { font-size: 11px; opacity: .85; font-weight: 600; display: block; margin-top: 2px; }
+  .boost-play {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,.25); border: 2px solid rgba(255,255,255,.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex: 0 0 auto;
+  }
+  .boost-active {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 16px; border-radius: 16px;
+    background: linear-gradient(120deg, #166534 0%, #15803d 100%);
+    border: 1px solid rgba(74,222,128,.4);
+    color: #dcfce7; font-weight: 800; font-size: 13.5px;
+    box-shadow: 0 0 24px rgba(74,222,128,.4), inset 0 1px 0 rgba(255,255,255,.15);
+    animation: pulseBoost 1.6s ease-in-out infinite;
+  }
+  @keyframes pulseBoost {
+    0%, 100% { box-shadow: 0 0 24px rgba(74,222,128,.4), inset 0 1px 0 rgba(255,255,255,.15); }
+    50%      { box-shadow: 0 0 36px rgba(74,222,128,.7), inset 0 1px 0 rgba(255,255,255,.15); }
+  }
+  .boost-active .boost-ico { font-size: 20px; }
+  .boost-active b { color: #fde047; font-variant-numeric: tabular-nums; }
+  .stage {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 8px 16px; position: relative;
+    cursor: pointer; touch-action: manipulation;
+  }
+  .stage.empty { cursor: default; }
+  .garage-empty { text-align: center; padding: 40px 20px; color: #64748b; font-size: 14px; line-height: 1.6; }
+  .garage-empty .big { font-size: 56px; margin-bottom: 12px; opacity: .6; }
+  .car-wrap {
+    width: 100%; max-width: 520px;
+    position: relative;
+    filter: drop-shadow(0 24px 34px rgba(0,0,0,.65));
+    transition: transform .1s ease;
+  }
+  .stage:not(.empty):active .car-wrap { transform: scale(.98); }
+  .car-wrap svg { width: 100%; height: auto; display: block; }
+
+  .car-header { text-align: left; padding: 0 4px; margin-bottom: 6px; }
+  .car-name { font-size: 22px; font-weight: 900; color: #e6ecff; letter-spacing: .2px; line-height: 1.15; text-transform: uppercase; }
+  .car-name .bpan-badge {
+    font-size: 11px; font-weight: 800;
+    background: linear-gradient(120deg, #a855f7, #6366f1);
+    color: #fff; padding: 2px 8px; border-radius: 6px;
+    margin-left: 8px; vertical-align: middle;
+    text-transform: none; letter-spacing: .5px;
+    box-shadow: 0 0 12px rgba(168,85,247,.6);
+  }
+  .car-tag { font-size: 12px; opacity: .55; margin-top: 4px; letter-spacing: .2px; }
+  .car-passive { text-align: left; font-size: 12.5px; font-weight: 700; color: #7dd3fc; margin-top: 10px; padding: 0 4px; letter-spacing: .2px; }
+  .car-passive .click-part { color: #4ade80; }
+  .car-passive .boost-mark {
+    color: #fb923c; font-size: 11px;
+    background: rgba(251,146,60,.15);
+    padding: 1px 6px; border-radius: 6px; margin-left: 6px;
+  }
+  .rust-meter {
+    width: 100%; max-width: 520px; margin-top: 12px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; font-weight: 700; color: #94a3b8; padding: 0 4px;
+  }
+  .rust-meter .bar { flex: 1; height: 8px; border-radius: 5px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .rust-meter .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #78350f, #b45309, #92400e);
+    border-radius: 5px; width: 25%;
+    transition: width .35s ease;
+    box-shadow: 0 0 10px rgba(180,83,9,.5);
+  }
+  .rust-meter .val { color: #f59e0b; }
+  .hint { text-align: center; font-size: 11.5px; opacity: .55; margin-top: 12px; padding: 0 16px; line-height: 1.6; }
+  .hint b { color: #94a3b8; }
+  .hint .key {
+    display: inline-block;
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+    padding: 0 6px; border-radius: 4px;
+    font-family: ui-monospace, monospace;
+    color: #fbbf24; margin: 0 2px;
+  }
+  .hint .key.hot { background: rgba(251,146,60,.2); border-color: rgba(251,146,60,.5); color: #fb923c; }
+  .tabs { display: flex; gap: 6px; padding: 10px 10px 14px; z-index: 5; }
+  .tabs button {
+    flex: 1;
+    font: inherit; font-size: 12.5px; font-weight: 700;
+    padding: 12px 8px; border-radius: 14px; border: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+    color: #cbd5e1; cursor: pointer;
+    box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.08), 0 6px 16px rgba(0,0,0,.25);
+    transition: transform .1s, box-shadow .1s, color .15s, background .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .tabs button .ico { font-size: 18px; }
+  .tabs button:active { transform: translateY(2px); }
+  .tabs button.active {
+    background: linear-gradient(180deg, #fbbf24, #d97706);
+    color: #fff;
+    box-shadow: 0 3px 0 #92400e, 0 8px 18px rgba(217,119,6,.35), inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .sheet {
+    position: fixed; inset: 0;
+    background: rgba(2,6,20,.65); backdrop-filter: blur(8px);
+    display: none; align-items: flex-end; justify-content: center;
+    z-index: 10000;
+  }
+  .sheet.show { display: flex; }
+  .sheet-box {
+    width: 100%; max-width: 560px; max-height: 84vh;
+    background: linear-gradient(180deg, #1a2743, #0e1730);
+    border-top-left-radius: 24px; border-top-right-radius: 24px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    padding: 8px 14px 20px; overflow-y: auto;
+    box-shadow: 0 -20px 60px rgba(0,0,0,.6);
+    animation: sheetUp .28s cubic-bezier(.2,1.2,.4,1);
+  }
+  @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet-grip { width: 40px; height: 4px; background: rgba(255,255,255,.2); border-radius: 3px; margin: 8px auto 14px; }
+  .sheet-title { font-size: 17px; font-weight: 800; margin-bottom: 14px; color: #e0f2fe; display: flex; align-items: center; gap: 8px; }
+  .car-item {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px; padding: 10px 12px; margin-bottom: 10px;
+    transition: transform .1s, border-color .2s, box-shadow .2s;
+  }
+  .car-item.selected { border-color: rgba(251,191,36,.5); box-shadow: 0 0 0 2px rgba(251,191,36,.35), 0 8px 20px rgba(0,0,0,.3); }
+  .car-item.owned { background: linear-gradient(180deg, rgba(74,222,128,.08), rgba(74,222,128,.02)); border-color: rgba(74,222,128,.2); }
+  .car-item.locked { opacity: .58; }
+  .car-item.locked .thumb { filter: grayscale(.65) brightness(.7); }
+  .car-item .thumb {
+    width: 110px; height: 66px; flex: 0 0 auto;
+    border-radius: 10px; overflow: hidden;
+    background: rgba(0,0,0,.35);
+    display: flex; align-items: center; justify-content: center;
+    padding: 4px; transition: filter .3s;
+  }
+  .car-item .thumb svg { width: 100%; height: 100%; }
+  .car-item .info { flex: 1; min-width: 0; }
+  .car-item .info .name { font-size: 13.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+  .car-item .info .meta { font-size: 11px; opacity: .65; display: flex; gap: 8px; flex-wrap: wrap; }
+  .car-item .info .meta .inc { color: #4ade80; font-weight: 700; }
+  .car-item .info .meta .passive { color: #7dd3fc; font-weight: 700; }
+  .car-item .info .meta .rust { color: #f59e0b; font-weight: 700; }
+  .car-item .action { flex: 0 0 auto; }
+  .car-item .action button {
+    font: inherit; font-size: 12px; font-weight: 800;
+    padding: 9px 14px; border-radius: 10px; border: none;
+    background: linear-gradient(180deg, #fbbf24, #d97706);
+    color: #fff; cursor: pointer;
+    box-shadow: 0 3px 0 #92400e, 0 6px 14px rgba(217,119,6,.35);
+    white-space: nowrap;
+    transition: transform .1s, opacity .15s, filter .15s;
+  }
+  .car-item .action button:active { transform: translateY(2px); }
+  .car-item .action button:disabled {
+    opacity: .55; cursor: not-allowed; box-shadow: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
+    color: #94a3b8; border: 1px solid rgba(255,255,255,.1);
+  }
+  .car-item .action button.ghost-green {
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+    box-shadow: 0 3px 0 #14532d, 0 6px 14px rgba(22,163,74,.35);
+  }
+  .car-item .action button.owned-badge {
+    background: linear-gradient(180deg, rgba(74,222,128,.15), rgba(74,222,128,.05));
+    color: #4ade80; box-shadow: none;
+    border: 1px solid rgba(74,222,128,.3);
+    cursor: default;
+  }
+  .tune-section {
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px; padding: 12px 14px; margin-bottom: 10px;
+  }
+  .tune-section.bpan { border-color: rgba(168,85,247,.35); background: linear-gradient(180deg, rgba(168,85,247,.12), rgba(99,102,241,.04)); }
+  .tune-section .head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; margin-bottom: 10px; color: #cbd5e1; flex-wrap: wrap; }
+  .tune-section .head .ico { font-size: 16px; }
+  .tune-section .head .price { margin-left: auto; color: #fbbf24; font-size: 12px; }
+  .tune-section .head .bonus {
+    color: #4ade80; font-size: 11px; font-weight: 700;
+    background: rgba(74,222,128,.1);
+    padding: 2px 7px; border-radius: 8px;
+    border: 1px solid rgba(74,222,128,.25);
+    white-space: nowrap;
+  }
+  .tune-section .head .bonus.purple { color: #c4b5fd; background: rgba(168,85,247,.15); border-color: rgba(168,85,247,.35); }
+  .tune-section.locked { opacity: .55; }
+  .tune-section.locked .head { color: #64748b; }
+  .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 8px; }
+  .color-cell {
+    aspect-ratio: 1; border-radius: 10px; cursor: pointer;
+    border: 2px solid rgba(255,255,255,.15);
+    transition: transform .1s, box-shadow .1s;
+    position: relative;
+  }
+  .color-cell:active { transform: scale(.9); }
+  .color-cell.active { box-shadow: 0 0 0 3px #fbbf24, 0 0 16px rgba(251,191,36,.6); }
+  .color-cell.locked { opacity: .4; cursor: not-allowed; filter: grayscale(.5); }
+  .color-cell.locked::after {
+    content: "🔒"; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px; opacity: .9;
+  }
+  .tune-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .tune-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .tune-row .label { flex: 1; font-size: 13px; font-weight: 600; }
+  .tune-row .label .desc { display: block; font-size: 11px; opacity: .55; font-weight: 500; margin-top: 2px; }
+  .tune-row .label .desc .pos { color: #4ade80; font-weight: 700; }
+  .tune-row .label .desc .pos.blue { color: #7dd3fc; }
+  .tune-row .label .desc .pos.purple { color: #c4b5fd; }
+  .tune-row .toggle {
+    width: 44px; height: 24px; border-radius: 14px;
+    background: rgba(255,255,255,.1);
+    position: relative; cursor: pointer;
+    transition: background .2s, opacity .2s;
+    flex: 0 0 auto;
+  }
+  .tune-row .toggle::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #94a3b8;
+    transition: transform .2s, background .2s;
+  }
+  .tune-row .toggle.on { background: rgba(74,222,128,.35); }
+  .tune-row .toggle.on::after { transform: translateX(20px); background: #4ade80; }
+  .tune-row .toggle.purple.on { background: rgba(168,85,247,.4); }
+  .tune-row .toggle.purple.on::after { background: #c4b5fd; }
+  .tune-row .toggle.locked { opacity: .55; cursor: not-allowed; }
+  .tune-row .toggle.locked::before {
+    content: "🔒"; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px; z-index: 2; opacity: .9;
+  }
+  .tune-row button.buy {
+    font: inherit; font-size: 12px; font-weight: 800;
+    padding: 8px 12px; border-radius: 10px; border: none;
+    background: linear-gradient(180deg, #38bdf8, #0284c7);
+    color: #fff; cursor: pointer;
+    box-shadow: 0 3px 0 #075985, 0 6px 14px rgba(2,132,199,.35);
+    transition: transform .1s, opacity .15s;
+    white-space: nowrap;
+  }
+  .tune-row button.buy:active { transform: translateY(2px); }
+  .tune-row button.buy:disabled {
+    opacity: .5; cursor: not-allowed; box-shadow: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.04));
+    color: #94a3b8; border: 1px solid rgba(255,255,255,.1);
+  }
+  .wheel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+  .wheel-opt {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 10px 4px 8px;
+    background: rgba(255,255,255,.04);
+    border: 2px solid rgba(255,255,255,.1);
+    border-radius: 12px;
+    cursor: pointer;
+    font: inherit; color: #cbd5e1;
+    transition: transform .1s, border-color .15s, box-shadow .15s;
+    overflow: hidden;
+  }
+  .wheel-opt:active { transform: scale(.96); }
+  .wheel-opt.active {
+    border-color: #4ade80;
+    box-shadow: 0 0 0 2px rgba(74,222,128,.3), 0 0 14px rgba(74,222,128,.35);
+    background: linear-gradient(180deg, rgba(74,222,128,.1), rgba(74,222,128,.02));
+    color: #4ade80;
+  }
+  .wheel-opt.locked { opacity: .55; cursor: not-allowed; }
+  .wheel-lock { position: absolute; top: 4px; right: 5px; font-size: 12px; }
+  .wheel-prev { width: 44px; height: 44px; }
+  .wheel-prev svg { width: 100%; height: 100%; display: block; }
+  .wheel-name { font-size: 11px; font-weight: 800; letter-spacing: .3px; }
+  .wheel-price { font-size: 10px; opacity: .7; font-weight: 600; }
+  .toast {
+    position: fixed; left: 50%; bottom: 100px;
+    transform: translateX(-50%) translateY(20px);
+    background: linear-gradient(180deg, #1e3a5f, #0f2440);
+    color: #7dd3fc; font-weight: 700; font-size: 13.5px;
+    padding: 10px 18px; border-radius: 12px;
+    border: 1px solid rgba(125,211,252,.4);
+    box-shadow: 0 12px 32px rgba(0,0,0,.5);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 20000; max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.ok { border-color: rgba(74,222,128,.5); color: #4ade80; }
+  .toast.err { border-color: rgba(239,68,68,.5); color: #fca5a5; }
+  .toast.boost { border-color: rgba(251,146,60,.6); color: #fb923c; }
+  .toast.bpan { border-color: rgba(168,85,247,.6); color: #c4b5fd; }
+  .float-money {
+    position: fixed; font-weight: 900; font-size: 20px;
+    color: #4ade80;
+    text-shadow: 0 2px 8px rgba(0,0,0,.7), 0 0 16px rgba(74,222,128,.6);
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, 0); white-space: nowrap;
+  }
+  .float-money.big { color: #fbbf24; font-size: 26px; text-shadow: 0 2px 8px rgba(0,0,0,.7), 0 0 20px rgba(251,191,36,.7); }
+  .float-money.space { color: #c4b5fd; font-size: 28px; text-shadow: 0 2px 8px rgba(0,0,0,.7), 0 0 24px rgba(168,85,247,.9); font-weight: 900; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="money-box">
+    <span>💰</span>
+    <span class="money" id="moneyEl">500</span>
+    <span class="rub">₽</span>
+  </div>
+  <div class="rates-box">
+    <div class="row"><span>за тап</span><b id="perClickEl">0 ₽</b></div>
+    <div class="row"><span>в секунду</span><b class="sec" id="perSecEl">0 ₽</b></div>
+  </div>
+</div>
+
+<div class="boost-bar">
+  <button class="boost-btn" id="boostBtn">
+    <span class="boost-ico">🔥</span>
+    <span class="boost-main">
+      <span class="boost-text">Авто-кликер +50%</span>
+      <span class="boost-sub">Смотреть рекламу · 30 минут буста</span>
+    </span>
+    <span class="boost-play">▶</span>
+  </button>
+  <div class="boost-active" id="boostActive" style="display:none;">
+    <span class="boost-ico">🔥</span>
+    <span style="flex:1;">Авто-кликер +50% активен</span>
+    <b id="boostTimer">30:00</b>
+  </div>
+</div>
+
+<div class="stage empty" id="stage">
+  <div class="garage-empty" id="emptyState">
+    <div class="big">🏚️</div>
+    У тебя пока нет тачки.<br>
+    Купи первую на <b style="color:#fbbf24">Б/У рынке</b> →
+  </div>
+  <div class="car-wrap" id="carWrap" style="display:none">
+    <div class="car-header">
+      <div class="car-name" id="carName"></div>
+      <div class="car-tag" id="carTag"></div>
+    </div>
+    <div id="carSvg"></div>
+    <div class="car-passive" id="carPassive"></div>
+    <div class="rust-meter" id="rustMeter">
+      <span>Ржавчина:</span>
+      <div class="bar"><div class="fill" id="rustFill"></div></div>
+      <span class="val" id="rustVal">25%</span>
+    </div>
+  </div>
+  <div class="hint" id="hint" style="display:none">
+    <b>ЛКМ</b> — 1x · <b>ПКМ</b> — 5x · <span class="key hot">ПРОБЕЛ</span> — <b>8x</b> буст
+  </div>
+</div>
+
+<div class="tabs">
+  <button data-tab="garage"><span class="ico">🚗</span>Гараж</button>
+  <button data-tab="market"><span class="ico">🏪</span>Б/У рынок</button>
+  <button data-tab="tuning"><span class="ico">🔧</span>Тюнинг</button>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="sheet-box">
+    <div class="sheet-grip"></div>
+    <div id="sheetContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TUNE_BONUS = {
+  paint:    { clickPct: 0.50, passivePct: 0.00 },
+  tint:     { clickPct: 0.30, passivePct: 0.30 },
+  wheels:   { clickPct: 0.00, passivePct: 0.50 },
+  lowering: { clickPct: 0.25, passivePct: 0.25 },
+};
+const BOOST_DURATION = 30 * 60 * 1000;
+const BOOST_MULT = 1.5;
+const SPACE_MULT = 8;
+
+const CARS = [
+  { id: 'vaz2107',    name: 'ВАЗ 2107',           price: 500,            income: 1,          passive: 0.5,    year: 1985, color: '#e8dfc8', shape: 'classic', tag: 'Классика. Легенда. 7-я серия.',
+    tune: { paint: 500,     tint: 300,     wheels: 800,     rust: 30,   lowering: 1200 } },
+  { id: 'vaz2109',    name: 'ВАЗ 2109',           price: 2500,           income: 4,          passive: 2,      year: 1990, color: '#2980b9', shape: 'hatch', tag: 'Спутник нового времени.',
+    tune: { paint: 1500,    tint: 800,     wheels: 2500,    rust: 100,  lowering: 4000 } },
+  { id: 'vaz2101',    name: 'ВАЗ 2101 Копейка',   price: 8000,           income: 10,         passive: 4,      year: 1974, color: '#e8dfc8', shape: 'classic', tag: 'С чего всё начиналось.',
+    tune: { paint: 3000,    tint: 1500,    wheels: 5000,    rust: 250,  lowering: 8000 } },
+  { id: 'moskvich',   name: 'Москвич 2140',       price: 20000,          income: 22,         passive: 8,      year: 1980, color: '#d3b87a', shape: 'classic', tag: 'Советский характер.',
+    tune: { paint: 6000,    tint: 3000,    wheels: 10000,   rust: 500,  lowering: 16000 } },
+  { id: 'oka',        name: 'Ока (ВАЗ 1111)',     price: 45000,          income: 45,         passive: 15,     year: 1995, color: '#f1c40f', shape: 'hatch', tag: 'Мал, да удал.',
+    tune: { paint: 12000,   tint: 6000,    wheels: 20000,   rust: 1000, lowering: 32000 } },
+  { id: 'niva',       name: 'Нива 4×4',           price: 100000,         income: 90,         passive: 30,     year: 1980, color: '#c0392b', shape: 'suv', tag: 'Легенда бездорожья.',
+    tune: { paint: 25000,   tint: 12000,   wheels: 40000,   rust: 2000, lowering: 65000 } },
+  { id: 'priora',     name: 'Лада Приора',        price: 250000,         income: 180,        passive: 60,     year: 2010, color: '#95a5a6', shape: 'modern', tag: 'Народный выбор.',
+    tune: { paint: 50000,   tint: 25000,   wheels: 80000,   rust: 5000, lowering: 130000 } },
+  { id: 'uazpickup',  name: 'УАЗ Пикап',          price: 550000,         income: 380,        passive: 130,    year: 2015, color: '#2c3e50', shape: 'pickup', tag: 'Рабочая лошадка.',
+    tune: { paint: 100000,  tint: 50000,   wheels: 170000,  rust: 10000,lowering: 270000 } },
+  { id: 'vesta',      name: 'Лада Веста',         price: 1200000,        income: 800,        passive: 280,    year: 2018, color: '#e67e22', shape: 'modern', tag: 'Новая волна.',
+    tune: { paint: 200000,  tint: 100000,  wheels: 350000,  rust: 20000,lowering: 560000 } },
+  { id: 'patriot',    name: 'УАЗ Патриот',        price: 2500000,        income: 1600,       passive: 550,    year: 2015, color: '#2c3e50', shape: 'suv', tag: 'Русский внедорожник.',
+    tune: { paint: 400000,  tint: 200000,  wheels: 700000,  rust: 40000,lowering: 1100000 } },
+  { id: 'mustang',    name: 'Ford Mustang',       price: 6000000,        income: 4000,       passive: 1400,   year: 1969, color: '#1c1c1c', shape: 'sport', tag: 'Американская мечта.',
+    tune: { paint: 800000,  tint: 400000,  wheels: 1500000, rust: 80000,lowering: 2200000 } },
+  { id: 'camry',      name: 'Toyota Camry',       price: 15000000,       income: 10000,      passive: 3500,   year: 2018, color: '#1c1c1c', shape: 'modern', tag: 'Мировой бестселлер.',
+    tune: { paint: 2000000, tint: 1000000, wheels: 3500000, rust: 200000,lowering: 5600000 } },
+  { id: 'bmwx5',      name: 'BMW X5',             price: 35000000,       income: 25000,      passive: 9000,   year: 2020, color: '#2c2c2c', shape: 'suv', tag: 'Удовольствие за рулём.',
+    tune: { paint: 5000000, tint: 2500000, wheels: 9000000, rust: 500000,lowering: 13000000 } },
+  { id: 'audirs6',    name: 'Audi RS6',           price: 80000000,       income: 60000,      passive: 22000,  year: 2021, color: '#4a4a4a', shape: 'modern', tag: 'Спорт в костюме.',
+    tune: { paint: 12000000,tint: 6000000, wheels: 20000000,rust: 1200000,lowering: 32000000 } },
+  { id: 'mercG',      name: 'Mercedes G-класс',   price: 180000000,      income: 150000,     passive: 55000,  year: 2020, color: '#1a1a1a', shape: 'suv', tag: 'Квадрат со смыслом.',
+    tune: { paint: 25000000,tint: 12000000,wheels: 45000000,rust: 2500000,lowering: 72000000 } },
+  { id: 'porsche911', name: 'Porsche 911',        price: 400000000,      income: 350000,     passive: 130000, year: 2022, color: '#dc2626', shape: 'sport', tag: 'Икона спорткаров.',
+    tune: { paint: 60000000,tint: 30000000,wheels: 100000000,rust: 6000000,lowering: 160000000 } },
+  { id: 'lambo',      name: 'Lamborghini Huracan',price: 900000000,      income: 800000,     passive: 300000, year: 2023, color: '#f1c40f', shape: 'sport', tag: 'Дерзость Милана.',
+    tune: { paint: 140000000,tint: 70000000,wheels: 240000000,rust: 14000000,lowering: 360000000 } },
+  { id: 'ferrari',    name: 'Ferrari 488',        price: 2000000000,     income: 2000000,    passive: 700000, year: 2022, color: '#dc2626', shape: 'sport', tag: 'Красный из Маранелло.',
+    tune: { paint: 300000000,tint: 150000000,wheels: 550000000,rust: 30000000,lowering: 800000000 } },
+  { id: 'rolls',      name: 'Rolls-Royce Phantom',price: 5000000000,     income: 5000000,    passive: 1800000,year: 2023, color: '#1c1c1c', shape: 'modern', tag: 'Тише только во сне.',
+    tune: { paint: 800000000,tint: 400000000,wheels: 1400000000,rust: 80000000,lowering: 2000000000 } },
+  { id: 'bugatti',    name: 'Bugatti Chiron',     price: 12000000000,    income: 12000000,   passive: 4500000,year: 2023, color: '#3498db', shape: 'sport', tag: 'Скорость звука.',
+    tune: { paint: 2000000000,tint: 1000000000,wheels: 3500000000,rust: 200000000,lowering: 5000000000 } },
+  { id: 'koenigsegg', name: 'Koenigsegg Jesko',   price: 30000000000,    income: 30000000,   passive: 12000000,year: 2023, color: '#1c1c1c', shape: 'sport', tag: 'Шведский снаряд.',
+    tune: { paint: 5000000000,tint: 2500000000,wheels: 8500000000,rust: 500000000,lowering: 12000000000 } },
+];
+
+const COLORS = [
+  { name: 'Красный',     hex: '#c0392b' },
+  { name: 'Синий',       hex: '#2980b9' },
+  { name: 'Зелёный',     hex: '#27ae60' },
+  { name: 'Жёлтый',      hex: '#f1c40f' },
+  { name: 'Чёрный',      hex: '#1c1c1c' },
+  { name: 'Белый',       hex: '#ecf0f1' },
+  { name: 'Серебристый', hex: '#95a5a6' },
+  { name: 'Бежевый',     hex: '#e8dfc8' },
+  { name: 'Фиолетовый',  hex: '#8e44ad' },
+  { name: 'Оранжевый',   hex: '#e67e22' },
+  { name: 'Розовый',     hex: '#e84393' },
+  { name: 'Хаки',        hex: '#6b7c3f' },
+  { name: 'Бирюзовый',   hex: '#16a085' },
+  { name: 'Вишнёвый',    hex: '#7c1f2b' },
+];
+
+const SHAPES = {
+  classic: {
+    body: "M 18,126 L 18,90 L 24,82 L 108,78 L 155,48 L 285,48 L 325,78 L 372,82 L 380,90 L 380,126 L 352,126 A 27,27 0 0 0 298,126 L 102,126 A 27,27 0 0 0 48,126 Z",
+    wheelR: 24, wheelWellR: 30,
+    wheels: [[75, 128], [325, 128]],
+    glass: "M 113,76 L 158,51 L 280,51 L 318,76 Z",
+    pillars: [
+      { x1: 158, y1: 51, x2: 158, y2: 76, w: 3 },
+      { x1: 218, y1: 51, x2: 218, y2: 76, w: 6 },
+      { x1: 280, y1: 51, x2: 280, y2: 76, w: 3 },
+    ],
+    doorLines: ["M 116,78 L 116,126", "M 218,76 L 218,126", "M 322,78 L 322,126"],
+    hoodLine: "M 30,84 L 108,80",
+    trunkLine: "M 322,80 L 372,84",
+    handles: [[186, 90], [244, 90]],
+    mirror: { x: 106, y: 68, w: 15, h: 11 },
+    headlight: { cx: 40, cy: 98, r: 11 },
+    turnSignal: { x: 32, y: 116, w: 16, h: 5 },
+    taillight: { x: 366, y: 90, w: 14, h: 22 },
+    bumperF: { x: 12, y: 116, w: 24, h: 14 },
+    bumperR: { x: 362, y: 116, w: 22, h: 14 },
+    beltLine: { x: 113, y: 76, w: 207, h: 2 },
+    sideTrim: { x: 116, y: 88, w: 256, h: 2.5 },
+    rubStrip: { x: 30, y: 122, w: 340, h: 3 },
+    rustZones: {
+      arches: [[75, 128], [325, 128]],
+      sill: { x: 60, y: 122, w: 280, h: 6 },
+      doors: [{ x: 116, y: 108, w: 96, h: 18 }, { x: 218, y: 108, w: 100, h: 18 }],
+    },
+    roofRails: null, spoiler: null,
+  },
+  hatch: {
+    body: "M 20,126 L 20,92 L 26,84 L 108,80 L 158,52 L 268,52 L 292,52 L 322,80 L 368,84 Q 376,86 378,94 L 378,126 L 350,126 A 26,26 0 0 0 298,126 L 100,126 A 26,26 0 0 0 48,126 Z",
+    wheelR: 23, wheelWellR: 29,
+    wheels: [[74, 128], [324, 128]],
+    glass: "M 116,80 L 162,55 L 262,55 L 288,55 L 312,80 Z",
+    pillars: [
+      { x1: 162, y1: 55, x2: 162, y2: 80, w: 3 },
+      { x1: 218, y1: 55, x2: 218, y2: 80, w: 6 },
+      { x1: 262, y1: 55, x2: 262, y2: 80, w: 3 },
+      { x1: 290, y1: 55, x2: 290, y2: 80, w: 3 },
+    ],
+    doorLines: ["M 120,82 L 120,126", "M 220,80 L 220,126"],
+    hoodLine: "M 32,86 L 108,82",
+    trunkLine: "M 292,54 L 320,80",
+    handles: [[184, 94], [244, 94]],
+    mirror: { x: 108, y: 70, w: 14, h: 10 },
+    headlight: { cx: 42, cy: 100, r: 10 },
+    turnSignal: { x: 34, y: 116, w: 14, h: 5 },
+    taillight: { x: 364, y: 92, w: 14, h: 20 },
+    bumperF: { x: 14, y: 116, w: 22, h: 14 },
+    bumperR: { x: 362, y: 116, w: 20, h: 14 },
+    beltLine: { x: 116, y: 80, w: 196, h: 2 },
+    sideTrim: { x: 120, y: 92, w: 250, h: 2 },
+    rubStrip: { x: 30, y: 122, w: 340, h: 3 },
+    rustZones: {
+      arches: [[74, 128], [324, 128]],
+      sill: { x: 60, y: 122, w: 290, h: 6 },
+      doors: [{ x: 120, y: 108, w: 98, h: 18 }, { x: 220, y: 108, w: 100, h: 18 }],
+    },
+    roofRails: null, spoiler: null,
+  },
+  modern: {
+    body: "M 18,126 L 18,98 L 22,86 Q 30,76 60,72 L 112,68 L 148,66 L 178,48 Q 188,42 202,42 L 272,42 Q 286,44 296,54 L 316,66 L 352,70 Q 374,76 378,94 L 378,126 L 350,126 A 27,27 0 0 0 296,126 L 100,126 A 27,27 0 0 0 46,126 Z",
+    wheelR: 25, wheelWellR: 31,
+    wheels: [[74, 128], [326, 128]],
+    glass: "M 122,66 L 178,48 Q 184,46 194,46 L 218,46 L 218,66 Z M 226,46 L 268,46 Q 276,48 282,54 L 300,66 L 226,66 Z",
+    pillars: [
+      { x1: 148, y1: 66, x2: 178, y2: 48, w: 3 },
+      { x1: 222, y1: 46, x2: 222, y2: 66, w: 5 },
+    ],
+    doorLines: ["M 118,68 L 118,126", "M 222,66 L 222,126"],
+    hoodLine: "M 30,84 L 115,70",
+    trunkLine: "M 300,58 L 352,72",
+    handles: [[182, 88], [246, 88]],
+    mirror: { x: 110, y: 62, w: 14, h: 10 },
+    headlight: { cx: 42, cy: 92, r: 10 },
+    turnSignal: { x: 36, y: 108, w: 14, h: 5 },
+    taillight: { x: 366, y: 84, w: 12, h: 20 },
+    bumperF: { x: 12, y: 116, w: 24, h: 14 },
+    bumperR: { x: 362, y: 116, w: 22, h: 14 },
+    beltLine: { x: 118, y: 66, w: 240, h: 2 },
+    sideTrim: { x: 118, y: 90, w: 256, h: 2.5 },
+    rubStrip: null,
+    rustZones: {
+      arches: [[74, 128], [326, 128]],
+      sill: { x: 60, y: 122, w: 290, h: 6 },
+      doors: [{ x: 118, y: 108, w: 100, h: 18 }, { x: 222, y: 108, w: 100, h: 18 }],
+    },
+    roofRails: null, spoiler: null,
+  },
+  suv: {
+    body: "M 18,126 L 18,80 L 22,64 Q 28,48 60,44 L 118,40 L 148,40 L 168,20 Q 178,14 194,14 L 268,14 Q 284,16 292,24 L 316,44 L 352,48 Q 376,56 378,74 L 378,126 L 350,126 A 29,29 0 0 0 292,126 L 100,126 A 29,29 0 0 0 42,126 Z",
+    wheelR: 28, wheelWellR: 34,
+    wheels: [[72, 126], [326, 126]],
+    glass: "M 122,42 L 150,22 Q 156,20 166,20 L 218,20 L 218,42 Z M 226,20 L 262,20 Q 274,22 280,28 L 296,42 L 226,42 Z",
+    pillars: [
+      { x1: 148, y1: 40, x2: 168, y2: 20, w: 3 },
+      { x1: 222, y1: 20, x2: 222, y2: 42, w: 6 },
+    ],
+    doorLines: ["M 118,44 L 118,126", "M 222,42 L 222,126"],
+    hoodLine: "M 32,58 L 115,42",
+    trunkLine: "M 300,26 L 352,50",
+    handles: [[176, 68], [244, 68]],
+    mirror: { x: 112, y: 54, w: 15, h: 11 },
+    headlight: { cx: 40, cy: 76, r: 9 },
+    turnSignal: { x: 34, y: 92, w: 14, h: 6 },
+    taillight: { x: 366, y: 68, w: 12, h: 24 },
+    bumperF: { x: 12, y: 108, w: 26, h: 16 },
+    bumperR: { x: 360, y: 108, w: 22, h: 16 },
+    beltLine: { x: 118, y: 42, w: 200, h: 2 },
+    sideTrim: { x: 118, y: 96, w: 240, h: 2.5 },
+    rubStrip: { x: 30, y: 104, w: 340, h: 3 },
+    rustZones: {
+      arches: [[72, 126], [326, 126]],
+      sill: { x: 55, y: 118, w: 300, h: 8 },
+      doors: [{ x: 118, y: 104, w: 100, h: 20 }, { x: 222, y: 104, w: 100, h: 20 }],
+    },
+    roofRails: [[188, 282, 12]],
+    spoiler: null,
+  },
+  pickup: {
+    body: "M 18,126 L 18,84 L 22,68 Q 30,56 60,52 L 118,48 L 142,48 L 168,24 Q 176,18 192,18 L 240,18 Q 252,18 258,26 L 278,48 L 282,48 L 282,86 L 374,86 Q 380,88 380,108 L 380,126 L 352,126 A 28,28 0 0 0 296,126 L 100,126 A 28,28 0 0 0 46,126 Z",
+    wheelR: 26, wheelWellR: 32,
+    wheels: [[72, 126], [324, 126]],
+    glass: "M 122,48 L 172,24 Q 178,22 188,22 L 216,22 L 216,48 Z",
+    pillars: [
+      { x1: 148, y1: 48, x2: 168, y2: 24, w: 3 },
+    ],
+    doorLines: ["M 118,50 L 118,126", "M 220,26 L 220,126"],
+    hoodLine: "M 30,62 L 115,52",
+    trunkLine: null,
+    handles: [[180, 78]],
+    mirror: { x: 108, y: 56, w: 15, h: 11 },
+    headlight: { cx: 40, cy: 80, r: 10 },
+    turnSignal: { x: 34, y: 96, w: 14, h: 5 },
+    taillight: { x: 366, y: 94, w: 12, h: 18 },
+    bumperF: { x: 12, y: 112, w: 24, h: 14 },
+    bumperR: { x: 360, y: 116, w: 22, h: 12 },
+    beltLine: { x: 118, y: 50, w: 164, h: 2 },
+    sideTrim: { x: 118, y: 82, w: 260, h: 2.5 },
+    rubStrip: { x: 30, y: 108, w: 340, h: 3 },
+    rustZones: {
+      arches: [[72, 126], [324, 126]],
+      sill: { x: 55, y: 118, w: 310, h: 7 },
+      doors: [{ x: 118, y: 108, w: 100, h: 18 }],
+    },
+    roofRails: null, spoiler: null,
+  },
+  sport: {
+    body: "M 12,128 L 12,106 Q 14,90 40,82 L 100,76 L 148,70 L 178,52 Q 190,44 208,42 L 268,42 Q 286,44 300,58 L 332,78 L 360,82 Q 386,88 388,106 L 388,128 L 360,128 A 26,26 0 0 0 308,128 L 100,128 A 26,26 0 0 0 48,128 Z",
+    wheelR: 24, wheelWellR: 30,
+    wheels: [[74, 130], [328, 130]],
+    glass: "M 178,66 L 200,50 Q 206,48 216,48 L 232,48 L 232,66 Z M 240,48 L 264,48 Q 272,52 278,58 L 296,66 L 240,66 Z",
+    pillars: [
+      { x1: 158, y1: 68, x2: 178, y2: 52, w: 3 },
+      { x1: 236, y1: 48, x2: 236, y2: 66, w: 5 },
+    ],
+    doorLines: ["M 158,72 L 158,128"],
+    hoodLine: "M 24,92 L 145,74",
+    trunkLine: "M 300,60 L 366,84",
+    handles: [[180, 82]],
+    mirror: { x: 148, y: 64, w: 14, h: 9 },
+    headlight: { cx: 34, cy: 94, r: 8 },
+    turnSignal: { x: 28, y: 108, w: 14, h: 5 },
+    taillight: { x: 376, y: 86, w: 12, h: 14 },
+    bumperF: { x: 8, y: 118, w: 22, h: 12 },
+    bumperR: { x: 376, y: 118, w: 16, h: 12 },
+    beltLine: { x: 158, y: 72, w: 220, h: 2 },
+    sideTrim: null,
+    rubStrip: null,
+    rustZones: {
+      arches: [[74, 130], [328, 130]],
+      sill: { x: 50, y: 122, w: 320, h: 5 },
+      doors: [{ x: 158, y: 112, w: 80, h: 16 }],
+    },
+    roofRails: null,
+    spoiler: { x: 332, y: 68, w: 48, h: 5 },
+  },
+};
+
+const STORAGE_KEY = 'carClicker_v17';
+let state = { money: 500, currentCar: null, cars: {}, boostUntil: 0 };
+let busyAd = false;
+
+async function saveState() {
+  const data = JSON.stringify(state);
+  try {
+    if (window.vkBridge && typeof vkBridge.send === 'function') {
+      await vkBridge.send('VKWebAppStorageSet', { key: STORAGE_KEY, value: data });
+    }
+  } catch (e) {}
+  try { localStorage.setItem(STORAGE_KEY, data); } catch (e) {}
+}
+async function loadState() {
+  try {
+    if (window.vkBridge && typeof vkBridge.send === 'function') {
+      const res = await vkBridge.send('VKWebAppStorageGet', { keys: [STORAGE_KEY] });
+      if (res && res.keys && res.keys[0] && res.keys[0].value) return JSON.parse(res.keys[0].value);
+    }
+  } catch (e) {}
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return null;
+}
+
+function formatMoney(n) { n = Math.floor(n); return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+function formatRate(n) {
+  if (n === 0) return '0';
+  if (n < 10) return n.toFixed(1);
+  if (n < 1000) return Math.round(n).toString();
+  return formatMoney(n);
+}
+function getCar(id) { return CARS.find(c => c.id === id); }
+function isOwned(id) { return !!state.cars[id]; }
+function carState(id) {
+  if (state.cars[id]) {
+    const cs = state.cars[id];
+    if (typeof cs.lowering !== 'boolean') cs.lowering = false;
+    if (typeof cs.wheels === 'boolean') cs.wheels = cs.wheels ? 'alloy' : 'steel';
+    if (typeof cs.wheels !== 'string') cs.wheels = 'steel';
+    return cs;
+  }
+  return { rust: 25, color: null, tint: false, wheels: 'steel', lowering: false, __temp: true };
+}
+function hasUpgradedWheels(cs) { return cs.wheels && cs.wheels !== 'steel'; }
+function boostMult() { return (state.boostUntil && state.boostUntil > Date.now()) ? BOOST_MULT : 1; }
+function boostActive() { return state.boostUntil && state.boostUntil > Date.now(); }
+function clickIncome(id) {
+  const c = getCar(id); if (!c) return 0;
+  const cs = carState(id);
+  const rustMult = 1 - cs.rust / 100;
+  let m = 1;
+  if (cs.color)  m += TUNE_BONUS.paint.clickPct;
+  if (cs.tint)   m += TUNE_BONUS.tint.clickPct;
+  if (cs.lowering) m += TUNE_BONUS.lowering.clickPct;
+  return Math.max(0, c.income * rustMult * m * boostMult());
+}
+function passiveOf(id) {
+  const c = getCar(id); if (!c) return 0;
+  const cs = carState(id);
+  const rustMult = 1 - cs.rust / 100;
+  let m = 1;
+  if (cs.tint)   m += TUNE_BONUS.tint.passivePct;
+  if (hasUpgradedWheels(cs)) m += TUNE_BONUS.wheels.passivePct;
+  if (cs.lowering) m += TUNE_BONUS.lowering.passivePct;
+  return Math.max(0, c.passive * rustMult * m * boostMult());
+}
+function totalPassive() {
+  let t = 0;
+  for (const id in state.cars) if (getCar(id)) t += passiveOf(id);
+  return t;
+}
+function tuneClickBonus(car, type)   { return TUNE_BONUS[type] ? car.income  * TUNE_BONUS[type].clickPct   : 0; }
+function tunePassiveBonus(car, type) { return TUNE_BONUS[type] ? car.passive * TUNE_BONUS[type].passivePct : 0; }
+
+function lighten(hex, amt) {
+  const c = parseInt(hex.replace('#',''), 16);
+  let r = (c >> 16) & 255, g = (c >> 8) & 255, b = c & 255;
+  r = Math.min(255, r + amt); g = Math.min(255, g + amt); b = Math.min(255, b + amt);
+  return '#' + ((r<<16)|(g<<8)|b).toString(16).padStart(6,'0');
+}
+function darken(hex, amt) { return lighten(hex, -amt); }
+
+function generateRust(shape, rustPercent) {
+  if (rustPercent <= 0) return '';
+  const intensity = rustPercent / 100;
+  const spots = [];
+  if (shape.rustZones && shape.rustZones.arches) {
+    shape.rustZones.arches.forEach(([cx, cy]) => {
+      const R = shape.wheelWellR;
+      const count = Math.round(2 + intensity * 4);
+      for (let i = 0; i < count; i++) {
+        const a = Math.PI + (i / count) * Math.PI;
+        const jitter = (Math.random() - 0.5) * 6;
+        const x = cx + Math.cos(a) * (R - 2) + jitter;
+        const y = cy + Math.sin(a) * (R - 2);
+        spots.push({ x, y, r: 4 + Math.random() * 5 });
+      }
+    });
+  }
+  if (shape.rustZones && shape.rustZones.sill) {
+    const s = shape.rustZones.sill;
+    const count = Math.round(3 + intensity * 6);
+    for (let i = 0; i < count; i++) {
+      const x = s.x + 10 + Math.random() * (s.w - 20);
+      const y = s.y + 1 + Math.random() * (s.h - 2);
+      spots.push({ x, y, r: 3 + Math.random() * 4 });
+    }
+  }
+  if (shape.rustZones && shape.rustZones.doors) {
+    shape.rustZones.doors.forEach(d => {
+      const count = Math.round(2 + intensity * 4);
+      for (let i = 0; i < count; i++) {
+        const x = d.x + 6 + Math.random() * (d.w - 12);
+        const y = d.y + 2 + Math.random() * (d.h - 4);
+        spots.push({ x, y, r: 3 + Math.random() * 4 });
+      }
+    });
+  }
+  return spots.map(s => `
+    <g opacity="${0.55 + intensity * 0.4}">
+      <circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="#4a2508"/>
+      <circle cx="${s.x - 1}" cy="${s.y - 1}" r="${s.r * 0.65}" fill="#7d4520"/>
+      <circle cx="${s.x - 1.5}" cy="${s.y - 1.5}" r="${s.r * 0.38}" fill="#a05a2a"/>
+      <circle cx="${s.x + 1.2}" cy="${s.y + 1.2}" r="${s.r * 0.35}" fill="#2a1405"/>
+    </g>
+  `).join('');
+}
+
+function wheelInner(cx, cy, R, kind, uid, cs) {
+  const bolts = Array.from({length: 5}).map((_, i) => {
+    const a = (i * 72 - 90) * Math.PI / 180;
+    const bx = cx + Math.cos(a) * R * 0.30;
+    const by = cy + Math.sin(a) * R * 0.30;
+    return `<circle cx="${bx}" cy="${by}" r="${R * 0.05}" fill="#2a2a2a" stroke="#0a0a0a" stroke-width="0.4"/>`;
+  }).join('');
+
+  if (kind === 'steel') {
+    const holeR = R * 0.09;
+    const dist  = R * 0.44;
+    const holes = [45, 135, 225, 315].map(a => {
+      const rad = a * Math.PI / 180;
+      return `<circle cx="${cx + Math.cos(rad) * dist}" cy="${cy + Math.sin(rad) * dist}" r="${holeR}" fill="#0a0a0a"/>`;
+    }).join('');
+    return `
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="url(#steel_${uid})" stroke="#2a2a2a" stroke-width="1"/>
+      ${holes}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.48}" fill="url(#chrome_${uid})" stroke="#303030" stroke-width="1.2"/>
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.38}" fill="none" stroke="#b8b8b8" stroke-width="0.7" opacity="0.75"/>
+      ${bolts}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.17}" fill="#d0d0d0" stroke="#2a2a2a" stroke-width="0.9"/>
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.06}" fill="#fafafa"/>
+    `;
+  }
+  if (kind === 'torus') {
+    const spokes = Array.from({length: 5}).map((_, i) => {
+      const a = (i * 72 - 90) * Math.PI / 180;
+      const x1 = cx + Math.cos(a) * R * 0.22;
+      const y1 = cy + Math.sin(a) * R * 0.22;
+      const x2 = cx + Math.cos(a) * R * 0.70;
+      const y2 = cy + Math.sin(a) * R * 0.70;
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#b0b0b0" stroke-width="${R * 0.30}" stroke-linecap="round"/>
+              <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#d8d8d8" stroke-width="${R * 0.14}" stroke-linecap="round"/>`;
+    }).join('');
+    return `
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.74}" fill="#262626" stroke="#2a2a2a" stroke-width="1.2"/>
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="url(#steel_${uid})" stroke="#1a1a1a" stroke-width="1.2"/>
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="none" stroke="#e0e0e0" stroke-width="0.7" opacity="0.7"/>
+      ${spokes}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.26}" fill="url(#chrome_${uid})" stroke="#202020" stroke-width="1"/>
+      ${bolts}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.10}" fill="#f4f4f4"/>
+    `;
+  }
+  const spokes = Array.from({length: 10}).map((_, i) => {
+    const a = (i * 36 - 90) * Math.PI / 180;
+    const x1 = cx + Math.cos(a) * R * 0.24;
+    const y1 = cy + Math.sin(a) * R * 0.24;
+    const x2 = cx + Math.cos(a) * R * 0.74;
+    const y2 = cy + Math.sin(a) * R * 0.74;
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#909090" stroke-width="${R * 0.10}" stroke-linecap="round"/>
+            <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c8c8c8" stroke-width="${R * 0.045}" stroke-linecap="round"/>`;
+  }).join('');
+  return `
+    <circle cx="${cx}" cy="${cy}" r="${R * 0.74}" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="1.2"/>
+    <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="url(#steel_${uid})" stroke="#1a1a1a" stroke-width="1.2"/>
+    <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="none" stroke="#d0d0d0" stroke-width="0.6" opacity="0.65"/>
+    ${spokes}
+    <circle cx="${cx}" cy="${cy}" r="${R * 0.24}" fill="url(#chrome_${uid})" stroke="#1a1a1a" stroke-width="1"/>
+    ${bolts}
+    <circle cx="${cx}" cy="${cy}" r="${R * 0.10}" fill="#f8f8f8"/>
+  `;
+}
+
+function wheelPreviewSVG(kind) {
+  const cx = 24, cy = 24, R = 21;
+  const bolts = Array.from({length: 5}).map((_, i) => {
+    const a = (i * 72 - 90) * Math.PI / 180;
+    return `<circle cx="${cx + Math.cos(a) * R * 0.30}" cy="${cy + Math.sin(a) * R * 0.30}" r="${R * 0.05}" fill="#2a2a2a"/>`;
+  }).join('');
+  let inner = '';
+  if (kind === 'steel') {
+    const holes = [45, 135, 225, 315].map(a => {
+      const rad = a * Math.PI / 180;
+      return `<circle cx="${cx + Math.cos(rad) * R * 0.44}" cy="${cy + Math.sin(rad) * R * 0.44}" r="${R * 0.09}" fill="#0a0a0a"/>`;
+    }).join('');
+    inner = `
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="#c8c8c8" stroke="#2a2a2a" stroke-width="0.8"/>
+      ${holes}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.48}" fill="#e0e0e0" stroke="#303030" stroke-width="0.8"/>
+      ${bolts}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.16}" fill="#d8d8d8" stroke="#2a2a2a" stroke-width="0.6"/>
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.06}" fill="#fafafa"/>
+    `;
+  } else if (kind === 'torus') {
+    const spokes = Array.from({length: 5}).map((_, i) => {
+      const a = (i * 72 - 90) * Math.PI / 180;
+      return `<line x1="${cx + Math.cos(a) * R * 0.22}" y1="${cy + Math.sin(a) * R * 0.22}"
+                   x2="${cx + Math.cos(a) * R * 0.7}" y2="${cy + Math.sin(a) * R * 0.7}"
+                   stroke="#b8b8b8" stroke-width="${R * 0.3}" stroke-linecap="round"/>`;
+    }).join('');
+    inner = `
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="#c0c0c0" stroke="#1a1a1a" stroke-width="0.8"/>
+      ${spokes}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.26}" fill="#e8e8e8" stroke="#202020" stroke-width="0.8"/>
+      ${bolts}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.1}" fill="#f4f4f4"/>
+    `;
+  } else {
+    const spokes = Array.from({length: 10}).map((_, i) => {
+      const a = (i * 36 - 90) * Math.PI / 180;
+      return `<line x1="${cx + Math.cos(a) * R * 0.24}" y1="${cy + Math.sin(a) * R * 0.24}"
+                   x2="${cx + Math.cos(a) * R * 0.74}" y2="${cy + Math.sin(a) * R * 0.74}"
+                   stroke="#a8a8a8" stroke-width="${R * 0.1}" stroke-linecap="round"/>`;
+    }).join('');
+    inner = `
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="#b8b8b8" stroke="#1a1a1a" stroke-width="0.8"/>
+      ${spokes}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.24}" fill="#e8e8e8" stroke="#1a1a1a" stroke-width="0.8"/>
+      ${bolts}
+      <circle cx="${cx}" cy="${cy}" r="${R * 0.1}" fill="#f8f8f8"/>
+    `;
+  }
+  return `
+    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="${cx}" cy="${cy}" r="${R}" fill="#1a1a1a"/>
+      ${inner}
+    </svg>
+  `;
+}
+
+function carSVG(carId) {
+  const car = getCar(carId);
+  if (!car) return '';
+  const cs = carState(carId);
+  const shape = SHAPES[car.shape];
+  const wheelKind = cs.wheels || 'steel';
+
+  const bodyColor = cs.color || car.color;
+  const isTinted  = cs.tint;
+  const isLowered = cs.lowering;
+  const glassTop  = isTinted ? '#1a2028' : '#f8fbff';
+  const glassMid  = isTinted ? '#0d1419' : '#b8d4ea';
+  const glassBot  = isTinted ? '#030608' : '#5e89a8';
+  const uid = 'c_' + carId;
+  const bodyHi     = lighten(bodyColor, 95);
+  const bodyLight  = lighten(bodyColor, 55);
+  const bodyMid    = bodyColor;
+  const bodyDark   = darken(bodyColor, 35);
+  const bodyLo     = darken(bodyColor, 60);
+  const bodyShadow = darken(bodyColor, 80);
+
+  const bodyOffset = isLowered ? 14 : 0;
+
+  const wheelShadowSvg = shape.wheels.map(([cx, cy]) =>
+    `<ellipse cx="${cx}" cy="157" rx="${shape.wheelR * 1.2}" ry="4" fill="rgba(0,0,0,.75)"/>`
+  ).join('');
+
+  const wheelSvg = shape.wheels.map(([cx, cy]) => {
+    const R = shape.wheelR;
+    return `
+      <g class="wheel" data-cx="${cx}" data-cy="${cy}">
+        <circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#tire_${uid})"/>
+        <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#000" stroke-width="1.4"/>
+        <circle cx="${cx}" cy="${cy}" r="${R * 0.9}" fill="none" stroke="#0a0a0a" stroke-width="0.8" opacity="0.7"/>
+        <circle cx="${cx}" cy="${cy}" r="${R * 0.88}" fill="none" stroke="#333" stroke-width="0.5" opacity="0.6" stroke-dasharray="2 2"/>
+        ${wheelInner(cx, cy, R, wheelKind, uid, cs)}
+      </g>
+    `;
+  }).join('');
+
+  const wellsSvg = shape.wheels.map(([cx, cy]) =>
+    `<circle cx="${cx}" cy="${cy}" r="${shape.wheelWellR}" fill="#050505"/>`
+  ).join('');
+
+  const rustSvg = generateRust(shape, cs.rust);
+
+  const glassSvg = `
+    <path d="${shape.glass}" fill="url(#glass_${uid})" stroke="#0a0a0a" stroke-width="2.8" stroke-linejoin="round"/>
+    <path d="${shape.glass}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="0.9" transform="translate(0,-1.4)"/>
+    <g clip-path="url(#glassClip_${uid})">
+      <path d="M 0,26 L 70,0 L 100,0 L 26,70 Z" fill="rgba(255,255,255,.35)"/>
+      <path d="M 26,26 L 100,0 L 116,0 L 44,76 Z" fill="rgba(255,255,255,.2)"/>
+      <path d="M 50,20 L 100,0 L 106,0 L 56,26 Z" fill="rgba(255,255,255,.4)"/>
+    </g>
+    ${shape.pillars.map(p => `<line x1="${p.x1}" y1="${p.y1}" x2="${p.x2}" y2="${p.y2}" stroke="#0a0a0a" stroke-width="${p.w}"/>`).join('')}
+  `;
+
+  function bumper(b) {
+    if (!b) return '';
+    const midY = b.y + b.h / 2 - 1.5;
+    return `
+      <rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="2.5" fill="url(#chrome_${uid})" stroke="#080808" stroke-width="1.4"/>
+      <rect x="${b.x + 2}" y="${b.y + 1.5}" width="${b.w - 4}" height="1.8" fill="#ffffff" opacity="0.9"/>
+      <rect x="${b.x + 2}" y="${b.y + 3}" width="${b.w - 4}" height="0.6" fill="#888" opacity="0.5"/>
+      <rect x="${b.x + 2}" y="${midY}" width="${b.w - 4}" height="3" fill="#0a0a0a" opacity="0.9"/>
+      <rect x="${b.x + 2}" y="${b.y + b.h - 2}" width="${b.w - 4}" height="1.2" fill="#000" opacity="0.55"/>
+    `;
+  }
+
+  const headlightSvg = shape.headlight ? `
+    <g id="hl-${uid}">
+      <circle cx="${shape.headlight.cx}" cy="${shape.headlight.cy}" r="${shape.headlight.r + 2.5}" fill="url(#chrome_${uid})" stroke="#080808" stroke-width="1.3"/>
+      <circle cx="${shape.headlight.cx}" cy="${shape.headlight.cy}" r="${shape.headlight.r}" fill="#fef9c3" stroke="#080808" stroke-width="1.1"/>
+      <circle cx="${shape.headlight.cx}" cy="${shape.headlight.cy}" r="${shape.headlight.r * 0.78}" fill="#fde68a"/>
+      <circle cx="${shape.headlight.cx}" cy="${shape.headlight.cy}" r="${shape.headlight.r * 0.48}" fill="#fff8c5"/>
+      <circle cx="${shape.headlight.cx - shape.headlight.r * 0.30}" cy="${shape.headlight.cy - shape.headlight.r * 0.30}" r="${shape.headlight.r * 0.24}" fill="#ffffff" opacity="0.95"/>
+    </g>
+  ` : '';
+
+  const taillightSvg = shape.taillight ? `
+    <g id="tl-${uid}">
+      <rect x="${shape.taillight.x}" y="${shape.taillight.y}" width="${shape.taillight.w}" height="${shape.taillight.h}" rx="2" fill="#dc2626" stroke="#080808" stroke-width="1.3"/>
+      <rect x="${shape.taillight.x + 1}" y="${shape.taillight.y + 1}" width="${shape.taillight.w - 2}" height="${shape.taillight.h * 0.38}" rx="1.5" fill="#f87171" opacity="0.95"/>
+      <line x1="${shape.taillight.x + 1}" y1="${shape.taillight.y + shape.taillight.h * 0.5}" x2="${shape.taillight.x + shape.taillight.w - 1}" y2="${shape.taillight.y + shape.taillight.h * 0.5}" stroke="#080808" stroke-width="0.8"/>
+      <rect x="${shape.taillight.x + 1}" y="${shape.taillight.y + shape.taillight.h * 0.58}" width="${shape.taillight.w - 2}" height="${shape.taillight.h * 0.36}" rx="1.5" fill="#991b1b" opacity="0.9"/>
+    </g>
+  ` : '';
+
+  const turnSignalSvg = shape.turnSignal ? `
+    <rect x="${shape.turnSignal.x}" y="${shape.turnSignal.y}" width="${shape.turnSignal.w}" height="${shape.turnSignal.h}" rx="2" fill="#f59e0b" stroke="#080808" stroke-width="1"/>
+    <rect x="${shape.turnSignal.x + 1}" y="${shape.turnSignal.y + 1}" width="${shape.turnSignal.w - 2}" height="${(shape.turnSignal.h - 2) * 0.5}" rx="1" fill="#fbbf24" opacity="0.95"/>
+  ` : '';
+
+  const handles = shape.handles.map(([hx, hy]) =>
+    `<rect x="${hx}" y="${hy}" width="14" height="3.5" rx="1.5" fill="#0a0a0a" stroke="#000" stroke-width="0.5"/>
+     <rect x="${hx + 1}" y="${hy + 0.7}" width="12" height="1.2" rx="0.6" fill="#4a4a4a" opacity="0.7"/>`
+  ).join('');
+
+  const sideTrimSvg = shape.sideTrim ? `
+    <rect x="${shape.sideTrim.x}" y="${shape.sideTrim.y}" width="${shape.sideTrim.w}" height="${shape.sideTrim.h}" fill="url(#chrome_${uid})"/>
+    <rect x="${shape.sideTrim.x}" y="${shape.sideTrim.y}" width="${shape.sideTrim.w}" height="0.6" fill="#ffffff" opacity="0.8"/>
+    <rect x="${shape.sideTrim.x}" y="${shape.sideTrim.y + shape.sideTrim.h - 0.7}" width="${shape.sideTrim.w}" height="0.7" fill="#000" opacity="0.5"/>
+  ` : '';
+
+  const beltLineSvg = shape.beltLine ? `
+    <rect x="${shape.beltLine.x}" y="${shape.beltLine.y}" width="${shape.beltLine.w}" height="${shape.beltLine.h}" fill="url(#chrome_${uid})" opacity="0.95"/>
+    <rect x="${shape.beltLine.x}" y="${shape.beltLine.y}" width="${shape.beltLine.w}" height="0.5" fill="#ffffff" opacity="0.85"/>
+  ` : '';
+
+  const rubStripSvg = shape.rubStrip ? `
+    <rect x="${shape.rubStrip.x}" y="${shape.rubStrip.y}" width="${shape.rubStrip.w}" height="${shape.rubStrip.h}" fill="#0a0a0a" opacity="0.85"/>
+  ` : '';
+
+  const hoodLineSvg = shape.hoodLine ? `
+    <path d="${shape.hoodLine}" stroke="#0a0a0a" stroke-width="1.2" fill="none" opacity="0.55"/>
+    <path d="${shape.hoodLine}" stroke="rgba(255,255,255,.28)" stroke-width="0.7" fill="none" transform="translate(0,-1)"/>
+  ` : '';
+  const trunkLineSvg = shape.trunkLine ? `
+    <path d="${shape.trunkLine}" stroke="#0a0a0a" stroke-width="1.2" fill="none" opacity="0.55"/>
+    <path d="${shape.trunkLine}" stroke="rgba(255,255,255,.28)" stroke-width="0.7" fill="none" transform="translate(0,-1)"/>
+  ` : '';
+
+  const mirrorSvg = shape.mirror ? `
+    <ellipse cx="${shape.mirror.x}" cy="${shape.mirror.y}" rx="${shape.mirror.w / 2}" ry="${shape.mirror.h / 2}" fill="#161616" stroke="#000" stroke-width="0.8"/>
+    <ellipse cx="${shape.mirror.x + 1}" cy="${shape.mirror.y - 1}" rx="${shape.mirror.w / 3}" ry="${shape.mirror.h / 3}" fill="#2a2a2a" opacity="0.55"/>
+  ` : '';
+
+  const rails = shape.roofRails ? shape.roofRails.map(([x1, x2, y]) => `
+    <line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+  `).join('') : '';
+  const spoiler = shape.spoiler ? `
+    <rect x="${shape.spoiler.x}" y="${shape.spoiler.y}" width="${shape.spoiler.w}" height="${shape.spoiler.h}" rx="2" fill="#161616" stroke="#000" stroke-width="1"/>
+    <rect x="${shape.spoiler.x}" y="${shape.spoiler.y}" width="${shape.spoiler.w}" height="1.4" fill="#444" opacity="0.6"/>
+  ` : '';
+
+  return `
+    <svg viewBox="0 0 400 168" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="body_${uid}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"    stop-color="${bodyHi}"/>
+          <stop offset="0.06" stop-color="${bodyLight}"/>
+          <stop offset="0.32" stop-color="${bodyMid}"/>
+          <stop offset="0.6"  stop-color="${bodyDark}"/>
+          <stop offset="0.85" stop-color="${bodyLo}"/>
+          <stop offset="1"    stop-color="${bodyShadow}"/>
+        </linearGradient>
+        <linearGradient id="glass_${uid}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"    stop-color="${glassTop}"/>
+          <stop offset="0.55" stop-color="${glassMid}"/>
+          <stop offset="1"    stop-color="${glassBot}"/>
+        </linearGradient>
+        <radialGradient id="tire_${uid}" cx="0.5" cy="0.4" r="0.75">
+          <stop offset="0.65" stop-color="#222"/>
+          <stop offset="1"    stop-color="#020202"/>
+        </radialGradient>
+        <linearGradient id="chrome_${uid}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"    stop-color="#ffffff"/>
+          <stop offset="0.3"  stop-color="#ececec"/>
+          <stop offset="0.5"  stop-color="#b8b8b8"/>
+          <stop offset="0.7"  stop-color="#8a8a8a"/>
+          <stop offset="1"    stop-color="#555"/>
+        </linearGradient>
+        <radialGradient id="steel_${uid}" cx="0.4" cy="0.35" r="0.7">
+          <stop offset="0.5" stop-color="#e0e0e0"/>
+          <stop offset="1"   stop-color="#727272"/>
+        </radialGradient>
+        <clipPath id="clip_${uid}"><path d="${shape.body}"/></clipPath>
+        <clipPath id="glassClip_${uid}"><path d="${shape.glass}"/></clipPath>
+      </defs>
+
+      ${wheelShadowSvg}
+      ${wellsSvg}
+      ${wheelSvg}
+
+      <g transform="translate(0, ${bodyOffset})">
+        <path d="${shape.body}" fill="url(#body_${uid})" stroke="#0a0a0a" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="${shape.body}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.3" transform="translate(0,1.5)"/>
+        <path d="${shape.body}" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="0.9" transform="translate(0,3)"/>
+        <path d="${shape.body}" fill="none" stroke="rgba(0,0,0,.6)" stroke-width="1.4" transform="translate(0,-1.6)"/>
+
+        ${hoodLineSvg}
+        ${trunkLineSvg}
+
+        <g clip-path="url(#clip_${uid})">${rustSvg}</g>
+        ${glassSvg}
+        ${shape.doorLines.map(d => `<path d="${d}" stroke="#0a0a0a" stroke-width="1.2" opacity="0.6" fill="none"/>`).join('')}
+        ${handles}
+        ${beltLineSvg}
+        ${sideTrimSvg}
+        ${rubStripSvg}
+        ${mirrorSvg}
+        ${headlightSvg}
+        ${turnSignalSvg}
+        ${taillightSvg}
+        ${bumper(shape.bumperF)}
+        ${bumper(shape.bumperR)}
+        ${rails}
+        ${spoiler}
+      </g>
+    </svg>
+  `;
+}
+
+const moneyEl     = document.getElementById('moneyEl');
+const perClickEl  = document.getElementById('perClickEl');
+const perSecEl    = document.getElementById('perSecEl');
+const stageEl     = document.getElementById('stage');
+const emptyState  = document.getElementById('emptyState');
+const carWrap     = document.getElementById('carWrap');
+const carName     = document.getElementById('carName');
+const carTag      = document.getElementById('carTag');
+const carPassive  = document.getElementById('carPassive');
+const carSvgEl    = document.getElementById('carSvg');
+const rustFill    = document.getElementById('rustFill');
+const rustVal     = document.getElementById('rustVal');
+const hintEl      = document.getElementById('hint');
+
+function render() {
+  moneyEl.textContent = formatMoney(state.money);
+  const boosted = boostActive();
+  perSecEl.textContent = formatRate(totalPassive()) + ' ₽';
+  perSecEl.className = 'sec' + (boosted ? ' boosted' : '');
+
+  if (state.currentCar && getCar(state.currentCar)) {
+    const car = getCar(state.currentCar);
+    const cs = carState(state.currentCar);
+    const inc = clickIncome(state.currentCar);
+    const pass = passiveOf(state.currentCar);
+
+    stageEl.classList.remove('empty');
+    emptyState.style.display = 'none';
+    carWrap.style.display = 'block';
+    hintEl.style.display = 'block';
+
+    const bpanBadge = cs.lowering ? '<span class="bpan-badge">БПАН</span>' : '';
+    carName.innerHTML = `${car.name} (${car.year})${bpanBadge}`;
+    carTag.textContent = car.tag || '';
+    const boostBadge = boosted ? ' <span class="boost-mark">🔥 +50%</span>' : '';
+    carPassive.innerHTML = `+${formatRate(pass)} ₽/сек · <span class="click-part">+${formatRate(inc)} ₽/тап</span>${boostBadge}`;
+    carSvgEl.innerHTML = carSVG(state.currentCar);
+
+    rustFill.style.width = cs.rust + '%';
+    rustVal.textContent = Math.round(cs.rust) + '%';
+    perClickEl.textContent = formatMoney(inc) + ' ₽';
+    perClickEl.className = boosted ? 'boosted' : '';
+  } else {
+    stageEl.classList.add('empty');
+    emptyState.style.display = 'block';
+    carWrap.style.display = 'none';
+    hintEl.style.display = 'none';
+    perClickEl.textContent = '0 ₽';
+    perClickEl.className = '';
+  }
+}
+
+function flashLights() {
+  if (!state.currentCar) return;
+  const car = getCar(state.currentCar);
+  if (!car) return;
+  const shape = SHAPES[car.shape];
+  const svg = carSvgEl.querySelector('svg');
+  if (!svg) return;
+
+  if (shape.headlight) {
+    const hl = shape.headlight;
+
+    const flash = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    flash.setAttribute('cx', hl.cx);
+    flash.setAttribute('cy', hl.cy);
+    flash.setAttribute('r', hl.r);
+    flash.setAttribute('fill', '#ffffff');
+    flash.style.pointerEvents = 'none';
+    svg.appendChild(flash);
+    flash.animate([
+      { opacity: 0,    transform: 'scale(0.6)' },
+      { opacity: 0.95, transform: 'scale(1.15)', offset: 0.15 },
+      { opacity: 0.5,  transform: 'scale(1)',     offset: 0.5 },
+      { opacity: 0,    transform: 'scale(1.4)' }
+    ], { duration: 340, easing: 'ease-out', fill: 'forwards' }).onfinish = () => flash.remove();
+
+    const cone = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    const cx = hl.cx, cy = hl.cy, rr = hl.r;
+    cone.setAttribute('points',
+      `${cx},${cy - rr * 0.7} ${cx},${cy + rr * 0.7} ${cx - 110},${cy + rr * 2.4} ${cx - 110},${cy - rr * 2.4}`
+    );
+    cone.setAttribute('fill', '#fde68a');
+    cone.style.filter = 'blur(3px)';
+    cone.style.pointerEvents = 'none';
+    svg.appendChild(cone);
+    cone.animate([
+      { opacity: 0,    transform: 'scaleX(0.2)' },
+      { opacity: 0.65, transform: 'scaleX(1)',   offset: 0.25 },
+      { opacity: 0.35, transform: 'scaleX(1.15)', offset: 0.6 },
+      { opacity: 0,    transform: 'scaleX(1.4)' }
+    ], { duration: 520, easing: 'ease-out', fill: 'forwards' }).onfinish = () => cone.remove();
+
+    const beam = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+    beam.setAttribute('cx', hl.cx);
+    beam.setAttribute('cy', hl.cy);
+    beam.setAttribute('rx', 16);
+    beam.setAttribute('ry', 16);
+    beam.setAttribute('fill', '#fff9b8');
+    beam.style.filter = 'blur(6px)';
+    beam.style.pointerEvents = 'none';
+    svg.appendChild(beam);
+    beam.animate([
+      { transform: 'translate(0,0) scale(0.4)', opacity: 0.95 },
+      { transform: 'translate(-45px,0) scale(2.2)', opacity: 0 }
+    ], { duration: 500, easing: 'cubic-bezier(.2,.8,.4,1)', fill: 'forwards' }).onfinish = () => beam.remove();
+  }
+
+  if (shape.taillight) {
+    const tl = shape.taillight;
+    const tcx = tl.x + tl.w / 2;
+    const tcy = tl.y + tl.h / 2;
+
+    const flash = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    flash.setAttribute('x', tl.x);
+    flash.setAttribute('y', tl.y);
+    flash.setAttribute('width', tl.w);
+    flash.setAttribute('height', tl.h);
+    flash.setAttribute('rx', 2);
+    flash.setAttribute('fill', '#ff4d4d');
+    flash.style.pointerEvents = 'none';
+    svg.appendChild(flash);
+    flash.animate([
+      { opacity: 0 },
+      { opacity: 0.9, offset: 0.15 },
+      { opacity: 0.4, offset: 0.55 },
+      { opacity: 0 }
+    ], { duration: 340, easing: 'ease-out', fill: 'forwards' }).onfinish = () => flash.remove();
+
+    const cone = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    cone.setAttribute('points',
+      `${tcx},${tcy - tl.h * 0.4} ${tcx},${tcy + tl.h * 0.4} ${tcx + 70},${tcy + tl.h * 1.3} ${tcx + 70},${tcy - tl.h * 1.3}`
+    );
+    cone.setAttribute('fill', '#dc2626');
+    cone.style.filter = 'blur(3px)';
+    cone.style.pointerEvents = 'none';
+    svg.appendChild(cone);
+    cone.animate([
+      { opacity: 0,    transform: 'scaleX(0.2)' },
+      { opacity: 0.55, transform: 'scaleX(1)',   offset: 0.25 },
+      { opacity: 0.3,  transform: 'scaleX(1.15)', offset: 0.6 },
+      { opacity: 0,    transform: 'scaleX(1.4)' }
+    ], { duration: 500, easing: 'ease-out', fill: 'forwards' }).onfinish = () => cone.remove();
+
+    const beam = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+    beam.setAttribute('cx', tcx);
+    beam.setAttribute('cy', tcy);
+    beam.setAttribute('rx', 12);
+    beam.setAttribute('ry', 12);
+    beam.setAttribute('fill', '#f87171');
+    beam.style.filter = 'blur(5px)';
+    beam.style.pointerEvents = 'none';
+    svg.appendChild(beam);
+    beam.animate([
+      { transform: 'translate(0,0) scale(0.4)', opacity: 0.9 },
+      { transform: 'translate(26px,0) scale(1.9)', opacity: 0 }
+    ], { duration: 460, easing: 'cubic-bezier(.2,.8,.4,1)', fill: 'forwards' }).onfinish = () => beam.remove();
+  }
+}
+
+function spinWheels() {
+  const svg = carSvgEl.querySelector('svg');
+  if (!svg) return;
+  svg.querySelectorAll('.wheel').forEach(w => {
+    if (w._spin) { try { w._spin.cancel(); } catch (e) {} }
+    const cx = parseFloat(w.dataset.cx);
+    const cy = parseFloat(w.dataset.cy);
+    w.style.transformBox = 'view-box';
+    w.style.transformOrigin = cx + 'px ' + cy + 'px';
+    w._spin = w.animate(
+      [
+        { transform: 'rotate(0deg)' },
+        { transform: 'rotate(360deg)' }
+      ],
+      { duration: 480, easing: 'cubic-bezier(.25,.6,.35,1)' }
+    );
+  });
+}
+
+let lastClickTime = 0;
+function handleClick(x, y, mult = 1, floatStyle = '') {
+  if (!state.currentCar) return;
+  const now = Date.now();
+  const minDelay = mult >= 8 ? 100 : 60;
+  if (now - lastClickTime < minDelay) return;
+  lastClickTime = now;
+
+  const inc = clickIncome(state.currentCar);
+  const gain = Math.max(1, Math.round(inc * mult));
+  state.money += gain;
+
+  flashLights();
+  spinWheels();
+  showFloat(x, y, '+' + formatMoney(gain) + ' ₽', mult, floatStyle);
+  moneyEl.textContent = formatMoney(state.money);
+  saveState();
+}
+function showFloat(x, y, text, mult, extraClass) {
+  const el = document.createElement('div');
+  let cls = 'float-money';
+  if (mult >= 8) cls += ' space';
+  else if (mult >= 5) cls += ' big';
+  if (extraClass) cls += ' ' + extraClass;
+  el.className = cls;
+  el.textContent = text;
+  el.style.left = x + 'px'; el.style.top = y + 'px';
+  document.body.appendChild(el);
+  const dx = (Math.random() - 0.5) * 40;
+  el.animate([
+    { transform: 'translate(-50%, 0) scale(1)', opacity: 1 },
+    { transform: `translate(calc(-50% + ${dx}px), -100px) scale(${mult >= 8 ? 1.3 : mult >= 5 ? 1.15 : 1})`, opacity: 0 }
+  ], { duration: mult >= 8 ? 1100 : 900, easing: 'cubic-bezier(.2,.8,.4,1)' }).onfinish = () => el.remove();
+}
+
+stageEl.addEventListener('mousedown', (e) => {
+  if (e.button === 0 || e.button === 2) {
+    e.preventDefault();
+    const mult = e.button === 2 ? 5 : 1;
+    handleClick(e.clientX, e.clientY, mult);
+  }
+});
+stageEl.addEventListener('contextmenu', (e) => e.preventDefault());
+stageEl.addEventListener('touchstart', (e) => {
+  if (!state.currentCar) return;
+  if (e.touches.length === 1) handleClick(e.touches[0].clientX, e.touches[0].clientY, 1);
+}, { passive: true });
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (!state.currentCar) return;
+    const rect = stageEl.getBoundingClientRect();
+    const x = rect.left + rect.width / 2 + (Math.random() - 0.5) * 60;
+    const y = rect.top + rect.height / 2 + (Math.random() - 0.5) * 40;
+    handleClick(x, y, SPACE_MULT, 'space');
+  }
+});
+
+setInterval(() => {
+  const inc = totalPassive() / 10;
+  if (inc > 0) { state.money += inc; moneyEl.textContent = formatMoney(state.money); }
+}, 100);
+setInterval(() => saveState(), 5000);
+window.addEventListener('beforeunload', () => saveState());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveState(); });
+
+const boostBtn    = document.getElementById('boostBtn');
+const boostActiveEl = document.getElementById('boostActive');
+const boostTimerEl  = document.getElementById('boostTimer');
+
+function renderBoostUI() {
+  const active = boostActive();
+  if (active) {
+    boostBtn.style.display = 'none';
+    boostActiveEl.style.display = 'flex';
+    const left = Math.max(0, state.boostUntil - Date.now());
+    const totalSec = Math.floor(left / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    boostTimerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  } else {
+    boostBtn.style.display = 'flex';
+    boostActiveEl.style.display = 'none';
+  }
+}
+setInterval(() => {
+  if (boostActive()) {
+    renderBoostUI();
+  } else if (state.boostUntil && state.boostUntil <= Date.now()) {
+    state.boostUntil = 0;
+    saveState();
+    renderBoostUI();
+    render();
+  }
+}, 1000);
+
+function startBoost(durationMs) {
+  const now = Date.now();
+  const base = (state.boostUntil && state.boostUntil > now) ? state.boostUntil : now;
+  state.boostUntil = base + durationMs;
+  saveState();
+  renderBoostUI();
+  render();
+}
+
+async function watchAd() {
+  if (busyAd) return;
+  busyAd = true;
+  boostBtn.disabled = true;
+  const subEl = boostBtn.querySelector('.boost-sub');
+  const prevText = subEl.textContent;
+  subEl.textContent = 'Загрузка рекламы...';
+  try {
+    if (window.vkBridge && typeof vkBridge.send === 'function') {
+      const check = await vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'reward' });
+      if (!check.result) throw new Error('Реклама недоступна');
+      const res = await vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'reward' });
+      if (!res.result) throw new Error('Реклама не досмотрена');
+      startBoost(BOOST_DURATION);
+      showToast('🔥 Авто-кликер +50% на 30 минут!', 'boost');
+    } else {
+      await new Promise(r => setTimeout(r, 600));
+      startBoost(BOOST_DURATION);
+      showToast('🔥 Авто-кликер +50% на 30 минут!', 'boost');
+    }
+  } catch (e) {
+    if (!window.vkBridge) {
+      startBoost(BOOST_DURATION);
+      showToast('🔥 Авто-кликер +50%!', 'boost');
+    } else {
+      showToast('Реклама недоступна, попробуй позже', 'err');
+    }
+  } finally {
+    busyAd = false;
+    boostBtn.disabled = false;
+    subEl.textContent = prevText;
+    renderBoostUI();
+  }
+}
+boostBtn.addEventListener('click', watchAd);
+
+const sheet = document.getElementById('sheet');
+const sheetContent = document.getElementById('sheetContent');
+let activeTab = null;
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    if (activeTab === tab) { closeSheet(); return; }
+    activeTab = tab;
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b === btn));
+    openSheet(tab);
+  });
+});
+sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); });
+function openSheet(tab) {
+  sheet.classList.add('show');
+  if (tab === 'garage') renderGarage();
+  if (tab === 'market') renderMarket();
+  if (tab === 'tuning') renderTuning();
+}
+function closeSheet() {
+  sheet.classList.remove('show');
+  activeTab = null;
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+}
+
+function renderGarage() {
+  const owned = Object.keys(state.cars).filter(id => getCar(id));
+  let html = '<div class="sheet-title">🚗 Мой гараж</div>';
+  if (!owned.length) {
+    html += `<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:14px; line-height:1.6;">Тут пока пусто.<br>Купи первую тачку на <b style="color:#fbbf24">Б/У рынке</b>.</div>`;
+    sheetContent.innerHTML = html; return;
+  }
+  owned.forEach(id => {
+    const car = getCar(id);
+    const cs = carState(id);
+    const inc = clickIncome(id);
+    const pass = passiveOf(id);
+    const selected = state.currentCar === id;
+    html += `
+      <div class="car-item ${selected ? 'selected' : ''}">
+        <div class="thumb">${carSVG(id)}</div>
+        <div class="info">
+          <div class="name">${car.name}${cs.lowering ? ' · БПАН' : ''}</div>
+          <div class="meta">
+            <span class="inc">+${formatRate(inc)}₽/тап</span>
+            <span class="passive">+${formatRate(pass)}₽/сек</span>
+            ${cs.rust > 0 ? `<span class="rust">${Math.round(cs.rust)}% рж.</span>` : ''}
+          </div>
+        </div>
+        <div class="action">
+          ${selected ? '<button class="owned-badge">✓ Активна</button>'
+                     : `<button class="ghost-green" onclick="selectCar('${id}')">Выбрать</button>`}
+        </div>
+      </div>`;
+  });
+  sheetContent.innerHTML = html;
+}
+function selectCar(id) { state.currentCar = id; saveState(); render(); renderGarage(); showToast('Тачка выбрана!', 'ok'); }
+
+function renderMarket() {
+  let html = '<div class="sheet-title">🏪 Б/У рынок</div>';
+  CARS.forEach(car => {
+    const owned = isOwned(car.id);
+    const canAfford = state.money >= car.price;
+    const locked = !owned && !canAfford;
+    html += `
+      <div class="car-item ${owned ? 'owned' : ''} ${locked ? 'locked' : ''}">
+        <div class="thumb">${carSVG(car.id)}</div>
+        <div class="info">
+          <div class="name">${car.name}</div>
+          <div class="meta">
+            <span class="inc">+${formatMoney(car.income)}₽/тап</span>
+            <span class="passive">+${formatRate(car.passive)}₽/сек</span>
+            ${owned ? '<span style="color:#4ade80">✓ Куплена</span>'
+                    : (locked ? '<span class="rust">нужно накопить</span>' : '<span class="rust">25% ржавчины</span>')}
+          </div>
+        </div>
+        <div class="action">
+          ${owned ? '<button class="owned-badge">В гараже</button>'
+                  : `<button ${canAfford ? '' : 'disabled'} onclick="buyCar('${car.id}')">${locked ? '🔒 ' : ''}${formatMoney(car.price)} ₽</button>`}
+        </div>
+      </div>`;
+  });
+  sheetContent.innerHTML = html;
+}
+function buyCar(id) {
+  const car = getCar(id); if (!car) return;
+  if (isOwned(id)) { showToast('Уже куплена!', 'err'); return; }
+  if (state.money < car.price) { showToast('Не хватает денег', 'err'); return; }
+  state.money -= car.price;
+  state.cars[id] = { rust: 25, color: null, tint: false, wheels: 'steel', lowering: false };
+  state.currentCar = id;
+  saveState(); render(); renderMarket();
+  showToast(`Куплено: ${car.name}! +${formatRate(car.passive)}₽/сек`, 'ok');
+}
+
+function renderTuning() {
+  if (!state.currentCar || !getCar(state.currentCar)) {
+    sheetContent.innerHTML = '<div class="sheet-title">🔧 Тюнинг</div><div style="text-align:center; padding:40px 10px; color:#64748b; font-size:14px; line-height:1.6;">Сначала купи тачку на Б/У рынке.</div>';
+    return;
+  }
+  const car = getCar(state.currentCar);
+  const cs = carState(state.currentCar);
+  const money = state.money;
+  const T = car.tune;
+  const paintClickB   = tuneClickBonus(car, 'paint');
+  const tintClickB    = tuneClickBonus(car, 'tint');
+  const tintPassB     = tunePassiveBonus(car, 'tint');
+  const wheelsPassB   = tunePassiveBonus(car, 'wheels');
+  const lowerClickB   = tuneClickBonus(car, 'lowering');
+  const lowerPassB    = tunePassiveBonus(car, 'lowering');
+
+  let html = `<div class="sheet-title">🔧 Тюнинг · ${car.name}</div>`;
+
+  const canPaint = money >= T.paint;
+  html += `
+    <div class="tune-section ${canPaint ? '' : 'locked'}">
+      <div class="head">
+        <span class="ico">🎨</span>Покраска ${canPaint ? '' : '🔒'}
+        <span class="bonus">+${formatRate(paintClickB)} ₽/тап</span>
+        <span class="price">${formatMoney(T.paint)} ₽</span>
+      </div>
+      <div class="color-grid">`;
+  COLORS.forEach(c => {
+    const isCurrent = (cs.color || car.color) === c.hex;
+    const lockedCell = !canPaint && !isCurrent;
+    html += `<div class="color-cell ${isCurrent ? 'active' : ''} ${lockedCell ? 'locked' : ''}" style="background:${c.hex}" title="${c.name}" onclick="paintCar('${c.hex}')"></div>`;
+  });
+  html += `</div></div>`;
+
+  const wheelPrices = { steel: 0, torus: T.wheels, alloy: Math.round(T.wheels * 1.5) };
+  const wheelNames = { steel: 'Штампы', torus: 'Торусы', alloy: 'Литые' };
+  html += `
+    <div class="tune-section">
+      <div class="head">
+        <span class="ico">⚙️</span>Диски
+        <span class="bonus">+${formatRate(wheelsPassB)} ₽/сек</span>
+      </div>
+      <div class="wheel-grid">`;
+  ['steel','torus','alloy'].forEach(kind => {
+    const isActive = cs.wheels === kind;
+    const price = wheelPrices[kind];
+    const canAfford = money >= price || isActive;
+    const locked = !isActive && !canAfford;
+    html += `
+      <button class="wheel-opt ${isActive ? 'active' : ''} ${locked ? 'locked' : ''}" onclick="setWheels('${kind}')">
+        ${locked ? '<span class="wheel-lock">🔒</span>' : ''}
+        <div class="wheel-prev">${wheelPreviewSVG(kind)}</div>
+        <div class="wheel-name">${wheelNames[kind]}</div>
+        <div class="wheel-price">${price === 0 ? 'бесплатно' : formatMoney(price) + ' ₽'}</div>
+      </button>
+    `;
+  });
+  html += `</div></div>`;
+
+  const canTint = money >= T.tint;
+  const tintLocked = !canTint && !cs.tint;
+  html += `
+    <div class="tune-section">
+      <div class="head"><span class="ico">🌑</span>Тонировка</div>
+      <div class="tune-row">
+        <div class="label">
+          Тёмные стёкла ${tintLocked ? '🔒' : ''}
+          <span class="desc">${formatMoney(T.tint)} ₽ · <span class="pos">+${formatRate(tintClickB)} ₽/тап · +${formatRate(tintPassB)} ₽/сек</span></span>
+        </div>
+        <div class="toggle ${cs.tint ? 'on' : ''} ${tintLocked ? 'locked' : ''}" onclick="toggleTint()"></div>
+      </div>
+    </div>`;
+
+  const canLower = money >= T.lowering;
+  const lowerLocked = !canLower && !cs.lowering;
+  html += `
+    <div class="tune-section bpan ${canLower || cs.lowering ? '' : 'locked'}">
+      <div class="head">
+        <span class="ico">⬇️</span>Занижение <span style="color:#c4b5fd;font-size:11px;font-weight:900;letter-spacing:1px;">БПАН</span> ${lowerLocked ? '🔒' : ''}
+        <span class="bonus purple">+${formatRate(lowerClickB)} ₽/тап · +${formatRate(lowerPassB)} ₽/сек</span>
+        <span class="price">${formatMoney(T.lowering)} ₽</span>
+      </div>
+      <div class="tune-row">
+        <div class="label">
+          Низкая посадка
+          <span class="desc">Кузов опускается над колёсами · <span class="pos purple">+25% клик · +25% пассив</span></span>
+        </div>
+        <div class="toggle purple ${cs.lowering ? 'on' : ''} ${lowerLocked ? 'locked' : ''}" onclick="toggleLowering()"></div>
+      </div>
+    </div>`;
+
+  html += `
+    <div class="tune-section">
+      <div class="head">
+        <span class="ico">🛠️</span>Ремонт ржавчины · ${Math.round(cs.rust)}%
+        <span class="price">${formatMoney(T.rust)} ₽ / 1%</span>
+      </div>`;
+  if (cs.rust <= 0) {
+    html += `<div style="font-size:13px; color:#4ade80; padding:6px 0;">✓ Тачка как новая, без ржавчины</div>`;
+  } else {
+    [10, 25, 50, 999].forEach(amt => {
+      const actual = Math.min(amt, cs.rust);
+      const cost = Math.ceil(actual * T.rust);
+      const canAfford = money >= cost;
+      const label = amt === 10 ? 'Мелкий ремонт' : amt === 25 ? 'Средний ремонт' : amt === 50 ? 'Капремонт' : 'Полный ремонт';
+      html += `
+        <div class="tune-row">
+          <div class="label">${label}
+            <span class="desc">−${Math.round(actual)}% ржавчины · <span class="pos">восстанавливает доход</span></span>
+          </div>
+          <button class="buy" ${canAfford ? '' : 'disabled'} onclick="repairRust(${amt})">${canAfford ? '' : '🔒 '}${formatMoney(cost)} ₽</button>
+        </div>`;
+    });
+  }
+  html += `</div>`;
+  sheetContent.innerHTML = html;
+}
+
+function paintCar(hex) {
+  if (!state.currentCar) return;
+  const car = getCar(state.currentCar);
+  const cs = carState(state.currentCar);
+  if ((cs.color || car.color) === hex) return;
+  if (state.money < car.tune.paint) { showToast('🔒 Не хватает на покраску', 'err'); return; }
+  const wasOwned = !!cs.color;
+  state.money -= car.tune.paint;
+  cs.color = hex;
+  saveState(); render(); renderTuning();
+  if (wasOwned) showToast('Цвет изменён', 'ok');
+  else showToast(`🎨 Покрашено! +${formatRate(tuneClickBonus(car, 'paint') * boostMult())} ₽/тап`, 'ok');
+}
+function setWheels(kind) {
+  if (!state.currentCar) return;
+  const car = getCar(state.currentCar);
+  const cs = carState(state.currentCar);
+  if (cs.wheels === kind) return;
+  const prices = { steel: 0, torus: car.tune.wheels, alloy: Math.round(car.tune.wheels * 1.5) };
+  const price = prices[kind];
+  if (state.money < price) { showToast('🔒 Не хватает на диски', 'err'); return; }
+  state.money -= price;
+  cs.wheels = kind;
+  saveState(); render(); renderTuning();
+  if (kind === 'steel') showToast('Установлены штампы', '');
+  else if (kind === 'torus') showToast(`⚙️ Торусы! +${formatRate(tunePassiveBonus(car, 'wheels') * boostMult())} ₽/сек`, 'ok');
+  else showToast(`✨ Литые! +${formatRate(tunePassiveBonus(car, 'wheels') * boostMult())} ₽/сек`, 'ok');
+}
+function toggleTint() {
+  if (!state.currentCar) return;
+  const car = getCar(state.currentCar);
+  const cs = carState(state.currentCar);
+  if (cs.tint) { cs.tint = false; saveState(); render(); renderTuning(); showToast('Тонировка снята', ''); return; }
+  if (state.money < car.tune.tint) { showToast('🔒 Не хватает денег', 'err'); return; }
+  state.money -= car.tune.tint; cs.tint = true;
+  saveState(); render(); renderTuning();
+  showToast(`🌑 Тонировка! +${formatRate(tuneClickBonus(car, 'tint') * boostMult())} ₽/тап · +${formatRate(tunePassiveBonus(car, 'tint') * boostMult())} ₽/сек`, 'ok');
+}
+function toggleLowering() {
+  if (!state.currentCar) return;
+  const car = getCar(state.currentCar);
+  const cs = carState(state.currentCar);
+  if (cs.lowering) {
+    cs.lowering = false;
+    saveState(); render(); renderTuning();
+    showToast('Занижение убрано', '');
+    return;
+  }
+  if (state.money < car.tune.lowering) { showToast('🔒 Не хватает на занижение', 'err'); return; }
+  state.money -= car.tune.lowering;
+  cs.lowering = true;
+  saveState(); render(); renderTuning();
+  showToast(`⬇️ БПАН! +${formatRate(tuneClickBonus(car, 'lowering') * boostMult())} ₽/тап · +${formatRate(tunePassiveBonus(car, 'lowering') * boostMult())} ₽/сек`, 'bpan');
+}
+function repairRust(amount) {
+  if (!state.currentCar) return;
+  const car = getCar(state.currentCar);
+  const cs = carState(state.currentCar);
+  const actual = Math.min(amount, cs.rust);
+  const cost = Math.ceil(actual * car.tune.rust);
+  if (state.money < cost) { showToast('🔒 Не хватает денег', 'err'); return; }
+  const beforeClick = clickIncome(state.currentCar);
+  const beforePass  = passiveOf(state.currentCar);
+  state.money -= cost;
+  cs.rust = Math.max(0, cs.rust - actual);
+  saveState(); render(); renderTuning();
+  const dClick = clickIncome(state.currentCar) - beforeClick;
+  const dPass  = passiveOf(state.currentCar)  - beforePass;
+  if (cs.rust === 0) showToast(`🎉 Как новая! +${formatRate(dClick)} ₽/тап · +${formatRate(dPass)} ₽/сек`, 'ok');
+  else showToast(`🛠️ −${Math.round(actual)}% ржавчины · +${formatRate(dClick)} ₽/тап`, 'ok');
+}
+
+let toastTimer = null;
+function showToast(text, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast ' + type; }, 2600);
+}
+
+async function initVK() {
+  if (typeof vkBridge === 'undefined') return;
+  try {
+    await vkBridge.send('VKWebAppInit');
+    vkBridge.send('VKWebAppSetViewSettings', {
+      status_bar_style: 'light', action_bar_color: '#0b1120', navigation_bar_color: '#0b1120'
+    }).catch(() => {});
+  } catch (e) {}
+}
+
+(async function start() {
+  await initVK();
+  const saved = await loadState();
+  if (saved && typeof saved.money === 'number') {
+    state = saved;
+    if (!state.cars) state.cars = {};
+    if (typeof state.boostUntil !== 'number') state.boostUntil = 0;
+    Object.keys(state.cars).forEach(id => {
+      if (!getCar(id)) { delete state.cars[id]; return; }
+      const cs = state.cars[id];
+      if (typeof cs.lowering !== 'boolean') cs.lowering = false;
+      if (typeof cs.wheels === 'boolean') cs.wheels = cs.wheels ? 'alloy' : 'steel';
+      if (typeof cs.wheels !== 'string') cs.wheels = 'steel';
+    });
+    if (state.currentCar && !getCar(state.currentCar)) state.currentCar = null;
+  }
+  render();
+  renderBoostUI();
+})();
+</script>
+</body>
+</html>
