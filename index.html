@@ -15,752 +15,860 @@
     background: radial-gradient(900px 600px at 50% -20%, #1e2a4a 0%, #0d1425 50%, #06090f 100%);
     display: flex; flex-direction: column;
   }
-  body::before {
-    content: ""; position: fixed; inset: 0; pointer-events: none;
-    background-image:
-      radial-gradient(circle at 15% 10%, rgba(96,165,250,.07), transparent 50%),
-      radial-gradient(circle at 85% 80%, rgba(245,158,11,.05), transparent 50%);
-  }
-  .topbar {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 14px 4px; z-index: 5; gap: 8px; flex-wrap: wrap;
-  }
-  .money-box {
-    display: flex; align-items: center; gap: 8px;
-    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.03));
-    padding: 8px 14px; border-radius: 14px;
-    border: 1px solid rgba(255,255,255,.1);
-    box-shadow: 0 6px 22px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);
-    font-weight: 800; font-size: 17px;
-  }
+  .splash { position: fixed; inset: 0; z-index: 30000; display: none; overflow: hidden; background: #0a0f1c; }
+  .splash.show { display: block; }
+  .splash-sky { position: absolute; inset: 0 0 42% 0; background: linear-gradient(180deg, #1a2a56 0%, #3b4a80 40%, #8a6a9a 70%, #d98a6a 100%); }
+  .splash-sun { position: absolute; left: 50%; top: 55%; width: 220px; height: 220px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, #ffd68a 0%, #ffb45c 35%, #ff8a4c 60%, transparent 75%); box-shadow: 0 0 120px rgba(255,170,90,.7); animation: sunPulse 6s ease-in-out infinite; }
+  @keyframes sunPulse { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.05); } }
+  .splash-road { position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: linear-gradient(180deg, #2a2d36 0%, #1a1c22 60%, #0d0e12 100%); }
+  .splash-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6vh 20px 5vh; z-index: 10; text-align: center; }
+  .splash-logo { font-size: 68px; animation: logoPulse 3s ease-in-out infinite; }
+  @keyframes logoPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  .splash-title { font-size: 44px; font-weight: 900; margin: 0; letter-spacing: 2px; line-height: 1; background: linear-gradient(180deg, #fff8e1 0%, #ffd66b 45%, #f59e0b 75%, #b45309 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .splash-sub { font-size: 14px; color: #cbd5e1; letter-spacing: 3px; text-transform: uppercase; margin-top: 6px; }
+  .splash-play { padding: 18px 60px; font: inherit; font-size: 19px; font-weight: 900; letter-spacing: 2px; border: none; border-radius: 18px; background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 45%, #d97706 100%); color: #3a1f00; cursor: pointer; box-shadow: 0 5px 0 #92400e, 0 14px 40px rgba(251,146,60,.65); }
+  .splash-play:active { transform: translateY(4px); }
+
+  .rules { position: fixed; inset: 0; background: linear-gradient(180deg, #0a0f1c 0%, #0d1425 100%); z-index: 29000; display: none; overflow-y: auto; padding: 20px 16px 30px; }
+  .rules.show { display: block; }
+  .rules-inner { max-width: 520px; margin: 0 auto; }
+  .rules-header { text-align: center; margin-bottom: 22px; }
+  .rules-header .rules-ico { font-size: 48px; margin-bottom: 8px; }
+  .rules-header h1 { font-size: 26px; font-weight: 900; margin: 0 0 6px; background: linear-gradient(180deg,#fff8e1,#fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .rules-header p { font-size: 13px; opacity: .7; margin: 0; }
+  .rules-card { background: linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 16px; margin-bottom: 12px; }
+  .rules-card h2 { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; margin: 0 0 12px; color: #e0f2fe; }
+  .rules-card .rule-item { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.55; margin-bottom: 10px; color: #cbd5e1; }
+  .rules-card .rule-item .bullet { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(180deg,#fbbf24,#d97706); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; }
+  .rules-card .rule-item b { color: #fbbf24; }
+  .rules-start { width: 100%; margin-top: 18px; padding: 16px; font: inherit; font-size: 16px; font-weight: 900; letter-spacing: 1.5px; border: none; border-radius: 16px; background: linear-gradient(180deg,#22c55e,#16a34a); color: #fff; cursor: pointer; box-shadow: 0 5px 0 #14532d; }
+
+  .game { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
+  .game.show { display: flex; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px 4px; gap: 8px; flex-wrap: wrap; }
+  .money-box { display: flex; align-items: center; gap: 8px; background: linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.03)); padding: 8px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,.1); font-weight: 800; font-size: 17px; }
   .money-box .money { color: #fbbf24; font-variant-numeric: tabular-nums; }
-  .money-box .rub { color: #fbbf24; opacity: .7; font-size: 14px; }
-  .rates-box {
-    display: flex; flex-direction: column; gap: 2px;
-    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-    padding: 6px 12px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.08);
-    font-size: 12px; font-weight: 700; color: #94a3b8;
-    min-width: 128px;
-  }
+  .rates-box { display: flex; flex-direction: column; gap: 2px; background: linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)); padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); font-size: 12px; font-weight: 700; color: #94a3b8; min-width: 128px; }
   .rates-box .row { display: flex; justify-content: space-between; gap: 8px; }
   .rates-box b { color: #4ade80; font-size: 12.5px; }
   .rates-box b.sec { color: #7dd3fc; }
-  .rates-box b.boosted { color: #fb923c; text-shadow: 0 0 10px rgba(251,146,60,.5); }
-  .boost-bar { padding: 8px 14px 0; z-index: 5; }
-  .boost-btn {
-    width: 100%;
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 16px;
-    border: none; border-radius: 16px;
-    cursor: pointer;
-    background: linear-gradient(120deg, #f97316 0%, #ef4444 60%, #dc2626 100%);
-    color: #fff;
-    font: inherit; font-weight: 800;
-    box-shadow: 0 3px 0 #7c1d0a, 0 8px 22px rgba(239,68,68,.4), 0 0 30px rgba(249,115,22,.35), inset 0 1px 0 rgba(255,255,255,.4);
-    transition: transform .1s, box-shadow .1s, filter .15s;
-    position: relative; overflow: hidden;
+
+  .top-icons { display: flex; gap: 6px; padding: 0 14px; margin-top: 6px; flex-wrap: wrap; }
+  .top-icons button {
+    flex: 1; min-width: 70px; font: inherit; font-size: 11px; font-weight: 700; padding: 8px 4px; border-radius: 12px; border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+    color: #e0f2fe; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative;
   }
-  .boost-btn::before {
-    content: "";
-    position: absolute; inset: 0;
-    background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.25) 50%, transparent 70%);
-    transform: translateX(-100%);
-    animation: shine 3s infinite;
-  }
-  @keyframes shine {
-    0% { transform: translateX(-100%); }
-    60% { transform: translateX(100%); }
-    100% { transform: translateX(100%); }
-  }
-  .boost-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #7c1d0a, 0 4px 12px rgba(239,68,68,.3); }
-  .boost-btn:disabled { opacity: .6; cursor: wait; animation: none; }
-  .boost-btn:disabled::before { animation: none; }
-  .boost-ico { font-size: 22px; filter: drop-shadow(0 0 8px rgba(255,255,255,.6)); }
+  .top-icons button .ico { font-size: 18px; }
+  .top-icons button .lbl { font-size: 9.5px; opacity: .85; }
+  .top-icons button .badge { position: absolute; top: 2px; right: 4px; background: #ef4444; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 8px; font-weight: 900; }
+
+  .boost-bar { padding: 8px 14px 0; }
+  .boost-btn { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: none; border-radius: 16px; cursor: pointer; background: linear-gradient(120deg,#f97316 0%,#ef4444 60%,#dc2626 100%); color: #fff; font: inherit; font-weight: 800; }
+  .boost-btn:disabled { opacity: .6; cursor: wait; }
+  .boost-ico { font-size: 22px; }
   .boost-main { flex: 1; text-align: left; line-height: 1.15; }
   .boost-text { font-size: 14px; display: block; }
   .boost-sub { font-size: 11px; opacity: .85; font-weight: 600; display: block; margin-top: 2px; }
-  .boost-play {
-    width: 30px; height: 30px; border-radius: 50%;
-    background: rgba(255,255,255,.25); border: 2px solid rgba(255,255,255,.5);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; flex: 0 0 auto;
-  }
-  .boost-active {
-    display: flex; align-items: center; gap: 10px;
-    padding: 11px 16px; border-radius: 16px;
-    background: linear-gradient(120deg, #166534 0%, #15803d 100%);
-    border: 1px solid rgba(74,222,128,.4);
-    color: #dcfce7; font-weight: 800; font-size: 13.5px;
-    box-shadow: 0 0 24px rgba(74,222,128,.4), inset 0 1px 0 rgba(255,255,255,.15);
-    animation: pulseBoost 1.6s ease-in-out infinite;
-  }
-  @keyframes pulseBoost {
-    0%, 100% { box-shadow: 0 0 24px rgba(74,222,128,.4), inset 0 1px 0 rgba(255,255,255,.15); }
-    50%      { box-shadow: 0 0 36px rgba(74,222,128,.7), inset 0 1px 0 rgba(255,255,255,.15); }
-  }
-  .boost-active .boost-ico { font-size: 20px; }
+  .boost-active { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-radius: 16px; background: linear-gradient(120deg,#166534 0%,#15803d 100%); border: 1px solid rgba(74,222,128,.4); color: #dcfce7; font-weight: 800; font-size: 13.5px; }
   .boost-active b { color: #fde047; font-variant-numeric: tabular-nums; }
-  .stage {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 8px 16px; position: relative;
-    cursor: pointer; touch-action: manipulation;
-  }
+
+  .chest-bar { padding: 8px 14px 0; }
+  .chest-btn { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: none; border-radius: 16px; cursor: pointer; background: linear-gradient(120deg, #a855f7 0%, #6366f1 100%); color: #fff; font: inherit; font-weight: 800; animation: chestShake 2.5s ease-in-out infinite; }
+  @keyframes chestShake { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  .chest-btn:disabled { opacity: .6; cursor: wait; animation: none; }
+  .chest-ico { font-size: 24px; }
+  .chest-main { flex: 1; text-align: left; }
+  .chest-text { font-size: 14px; display: block; }
+  .chest-sub { font-size: 11px; opacity: .85; display: block; margin-top: 2px; }
+  .chest-timer { font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 900; color: #fde047; }
+
+  .collection-bar { padding: 8px 14px 0; }
+  .collection-inner { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px; background: linear-gradient(180deg, rgba(168,85,247,.15), rgba(99,102,241,.04)); border: 1px solid rgba(168,85,247,.35); font-size: 11.5px; font-weight: 700; color: #c4b5fd; }
+  .collection-inner .bar { flex: 1; height: 6px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; }
+  .collection-inner .fill { height: 100%; background: linear-gradient(90deg,#a855f7,#6366f1); transition: width .4s; }
+  .collection-inner b { color: #fbbf24; }
+
+  .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 16px; cursor: pointer; touch-action: manipulation; min-height: 280px; }
   .stage.empty { cursor: default; }
   .garage-empty { text-align: center; padding: 40px 20px; color: #64748b; font-size: 14px; line-height: 1.6; }
   .garage-empty .big { font-size: 56px; margin-bottom: 12px; opacity: .6; }
-  .car-wrap {
-    width: 100%; max-width: 520px;
-    position: relative;
-    filter: drop-shadow(0 24px 34px rgba(0,0,0,.65));
-    transition: transform .1s ease;
-  }
-  .stage:not(.empty):active .car-wrap { transform: scale(.98); }
+  .car-wrap { width: 100%; max-width: 540px; position: relative; }
   .car-wrap svg { width: 100%; height: auto; display: block; }
-
   .car-header { text-align: left; padding: 0 4px; margin-bottom: 6px; }
-  .car-name { font-size: 22px; font-weight: 900; color: #e6ecff; letter-spacing: .2px; line-height: 1.15; text-transform: uppercase; }
-  .car-name .bpan-badge {
-    font-size: 11px; font-weight: 800;
-    background: linear-gradient(120deg, #a855f7, #6366f1);
-    color: #fff; padding: 2px 8px; border-radius: 6px;
-    margin-left: 8px; vertical-align: middle;
-    text-transform: none; letter-spacing: .5px;
-    box-shadow: 0 0 12px rgba(168,85,247,.6);
-  }
-  .car-tag { font-size: 12px; opacity: .55; margin-top: 4px; letter-spacing: .2px; }
-  .car-passive { text-align: left; font-size: 12.5px; font-weight: 700; color: #7dd3fc; margin-top: 10px; padding: 0 4px; letter-spacing: .2px; }
+  .car-name { font-size: 22px; font-weight: 900; color: #e6ecff; text-transform: uppercase; }
+  .car-name .bpan-badge { font-size: 11px; font-weight: 800; background: linear-gradient(120deg,#a855f7,#6366f1); color: #fff; padding: 2px 8px; border-radius: 6px; margin-left: 8px; }
+  .car-tag { font-size: 12px; opacity: .55; margin-top: 4px; }
+  .car-passive { text-align: left; font-size: 12.5px; font-weight: 700; color: #7dd3fc; margin-top: 10px; padding: 0 4px; }
   .car-passive .click-part { color: #4ade80; }
-  .car-passive .boost-mark {
-    color: #fb923c; font-size: 11px;
-    background: rgba(251,146,60,.15);
-    padding: 1px 6px; border-radius: 6px; margin-left: 6px;
-  }
-  .rust-meter {
-    width: 100%; max-width: 520px; margin-top: 12px;
-    display: flex; align-items: center; gap: 10px;
-    font-size: 12px; font-weight: 700; color: #94a3b8; padding: 0 4px;
-  }
-  .rust-meter .bar { flex: 1; height: 8px; border-radius: 5px; background: rgba(255,255,255,.08); overflow: hidden; }
-  .rust-meter .fill {
-    height: 100%;
-    background: linear-gradient(90deg, #78350f, #b45309, #92400e);
-    border-radius: 5px; width: 25%;
-    transition: width .35s ease;
-    box-shadow: 0 0 10px rgba(180,83,9,.5);
-  }
+  .rust-meter { width: 100%; max-width: 540px; margin-top: 12px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; color: #94a3b8; }
+  .rust-meter .bar { flex: 1; height: 8px; background: rgba(255,255,255,.08); border-radius: 5px; overflow: hidden; }
+  .rust-meter .fill { height: 100%; background: linear-gradient(90deg,#78350f,#b45309); }
   .rust-meter .val { color: #f59e0b; }
-  .hint { text-align: center; font-size: 11.5px; opacity: .55; margin-top: 12px; padding: 0 16px; line-height: 1.6; }
-  .hint b { color: #94a3b8; }
-  .hint .key {
-    display: inline-block;
-    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
-    padding: 0 6px; border-radius: 4px;
-    font-family: ui-monospace, monospace;
-    color: #fbbf24; margin: 0 2px;
-  }
-  .hint .key.hot { background: rgba(251,146,60,.2); border-color: rgba(251,146,60,.5); color: #fb923c; }
-  .tabs { display: flex; gap: 6px; padding: 10px 10px 14px; z-index: 5; }
-  .tabs button {
-    flex: 1;
-    font: inherit; font-size: 12.5px; font-weight: 700;
-    padding: 12px 8px; border-radius: 14px; border: none;
-    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-    color: #cbd5e1; cursor: pointer;
-    box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.08), 0 6px 16px rgba(0,0,0,.25);
-    transition: transform .1s, box-shadow .1s, color .15s, background .15s;
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-  }
+  .hint { text-align: center; font-size: 11.5px; opacity: .55; margin-top: 12px; line-height: 1.6; }
+
+  .tabs { display: flex; gap: 6px; padding: 10px 10px 14px; }
+  .tabs button { flex: 1; font: inherit; font-size: 12px; font-weight: 700; padding: 12px 6px; border-radius: 14px; border: none; background: linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03)); color: #cbd5e1; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .tabs button .ico { font-size: 18px; }
-  .tabs button:active { transform: translateY(2px); }
-  .tabs button.active {
-    background: linear-gradient(180deg, #fbbf24, #d97706);
-    color: #fff;
-    box-shadow: 0 3px 0 #92400e, 0 8px 18px rgba(217,119,6,.35), inset 0 1px 0 rgba(255,255,255,.4);
-  }
-  .sheet {
-    position: fixed; inset: 0;
-    background: rgba(2,6,20,.65); backdrop-filter: blur(8px);
-    display: none; align-items: flex-end; justify-content: center;
-    z-index: 10000;
-  }
+  .tabs button.active { background: linear-gradient(180deg,#fbbf24,#d97706); color: #fff; }
+
+  .sheet { position: fixed; inset: 0; background: rgba(2,6,20,.65); backdrop-filter: blur(8px); display: none; align-items: flex-end; justify-content: center; z-index: 10000; }
   .sheet.show { display: flex; }
-  .sheet-box {
-    width: 100%; max-width: 560px; max-height: 84vh;
-    background: linear-gradient(180deg, #1a2743, #0e1730);
-    border-top-left-radius: 24px; border-top-right-radius: 24px;
-    border-top: 1px solid rgba(255,255,255,.12);
-    padding: 8px 14px 20px; overflow-y: auto;
-    box-shadow: 0 -20px 60px rgba(0,0,0,.6);
-    animation: sheetUp .28s cubic-bezier(.2,1.2,.4,1);
-  }
+  .sheet-box { width: 100%; max-width: 560px; max-height: 84vh; background: linear-gradient(180deg,#1a2743,#0e1730); border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 8px 14px 20px; overflow-y: auto; animation: sheetUp .28s cubic-bezier(.2,1.2,.4,1); }
   @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .sheet-grip { width: 40px; height: 4px; background: rgba(255,255,255,.2); border-radius: 3px; margin: 8px auto 14px; }
   .sheet-title { font-size: 17px; font-weight: 800; margin-bottom: 14px; color: #e0f2fe; display: flex; align-items: center; gap: 8px; }
-  .car-item {
-    display: flex; align-items: center; gap: 12px;
-    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 16px; padding: 10px 12px; margin-bottom: 10px;
-    transition: transform .1s, border-color .2s, box-shadow .2s;
-  }
-  .car-item.selected { border-color: rgba(251,191,36,.5); box-shadow: 0 0 0 2px rgba(251,191,36,.35), 0 8px 20px rgba(0,0,0,.3); }
-  .car-item.owned { background: linear-gradient(180deg, rgba(74,222,128,.08), rgba(74,222,128,.02)); border-color: rgba(74,222,128,.2); }
+
+  .car-item { display: flex; align-items: center; gap: 12px; background: linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 10px 12px; margin-bottom: 10px; }
+  .car-item.selected { border-color: rgba(251,191,36,.5); box-shadow: 0 0 0 2px rgba(251,191,36,.35); }
+  .car-item.owned { background: linear-gradient(180deg,rgba(74,222,128,.08),rgba(74,222,128,.02)); border-color: rgba(74,222,128,.2); }
   .car-item.locked { opacity: .58; }
-  .car-item.locked .thumb { filter: grayscale(.65) brightness(.7); }
-  .car-item .thumb {
-    width: 110px; height: 66px; flex: 0 0 auto;
-    border-radius: 10px; overflow: hidden;
-    background: rgba(0,0,0,.35);
-    display: flex; align-items: center; justify-content: center;
-    padding: 4px; transition: filter .3s;
-  }
-  .car-item .thumb svg { width: 100%; height: 100%; }
+  .car-item .thumb { width: 120px; height: 72px; flex: 0 0 auto; border-radius: 10px; overflow: hidden; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; padding: 4px; }
+  .car-item .thumb svg { width: 100%; height: 100%; object-fit: contain; }
   .car-item .info { flex: 1; min-width: 0; }
-  .car-item .info .name { font-size: 13.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
-  .car-item .info .meta { font-size: 11px; opacity: .65; display: flex; gap: 8px; flex-wrap: wrap; }
+  .car-item .info .name { font-size: 13.5px; font-weight: 800; margin-bottom: 3px; }
+  .car-item .info .meta { font-size: 11px; opacity: .75; display: flex; gap: 8px; flex-wrap: wrap; }
   .car-item .info .meta .inc { color: #4ade80; font-weight: 700; }
   .car-item .info .meta .passive { color: #7dd3fc; font-weight: 700; }
-  .car-item .info .meta .rust { color: #f59e0b; font-weight: 700; }
-  .car-item .action { flex: 0 0 auto; }
-  .car-item .action button {
-    font: inherit; font-size: 12px; font-weight: 800;
-    padding: 9px 14px; border-radius: 10px; border: none;
-    background: linear-gradient(180deg, #fbbf24, #d97706);
-    color: #fff; cursor: pointer;
-    box-shadow: 0 3px 0 #92400e, 0 6px 14px rgba(217,119,6,.35);
-    white-space: nowrap;
-    transition: transform .1s, opacity .15s, filter .15s;
-  }
-  .car-item .action button:active { transform: translateY(2px); }
-  .car-item .action button:disabled {
-    opacity: .55; cursor: not-allowed; box-shadow: none;
-    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
-    color: #94a3b8; border: 1px solid rgba(255,255,255,.1);
-  }
-  .car-item .action button.ghost-green {
-    background: linear-gradient(180deg, #22c55e, #16a34a);
-    box-shadow: 0 3px 0 #14532d, 0 6px 14px rgba(22,163,74,.35);
-  }
-  .car-item .action button.owned-badge {
-    background: linear-gradient(180deg, rgba(74,222,128,.15), rgba(74,222,128,.05));
-    color: #4ade80; box-shadow: none;
-    border: 1px solid rgba(74,222,128,.3);
-    cursor: default;
-  }
-  .tune-section {
-    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 16px; padding: 12px 14px; margin-bottom: 10px;
-  }
-  .tune-section.bpan { border-color: rgba(168,85,247,.35); background: linear-gradient(180deg, rgba(168,85,247,.12), rgba(99,102,241,.04)); }
+  .car-item .action button { font: inherit; font-size: 12px; font-weight: 800; padding: 9px 14px; border-radius: 10px; border: none; background: linear-gradient(180deg,#fbbf24,#d97706); color: #fff; cursor: pointer; white-space: nowrap; }
+  .car-item .action button:disabled { opacity: .55; cursor: not-allowed; background: rgba(255,255,255,.06); color: #94a3b8; }
+  .car-item .action button.ghost-green { background: linear-gradient(180deg,#22c55e,#16a34a); }
+  .car-item .action button.owned-badge { background: rgba(74,222,128,.15); color: #4ade80; cursor: default; }
+
+  .tune-section { background: linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 12px 14px; margin-bottom: 10px; }
+  .tune-section.bpan { border-color: rgba(168,85,247,.35); background: linear-gradient(180deg,rgba(168,85,247,.12),rgba(99,102,241,.04)); }
   .tune-section .head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; margin-bottom: 10px; color: #cbd5e1; flex-wrap: wrap; }
-  .tune-section .head .ico { font-size: 16px; }
   .tune-section .head .price { margin-left: auto; color: #fbbf24; font-size: 12px; }
-  .tune-section .head .bonus {
-    color: #4ade80; font-size: 11px; font-weight: 700;
-    background: rgba(74,222,128,.1);
-    padding: 2px 7px; border-radius: 8px;
-    border: 1px solid rgba(74,222,128,.25);
-    white-space: nowrap;
-  }
-  .tune-section .head .bonus.purple { color: #c4b5fd; background: rgba(168,85,247,.15); border-color: rgba(168,85,247,.35); }
-  .tune-section.locked { opacity: .55; }
-  .tune-section.locked .head { color: #64748b; }
   .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 8px; }
-  .color-cell {
-    aspect-ratio: 1; border-radius: 10px; cursor: pointer;
-    border: 2px solid rgba(255,255,255,.15);
-    transition: transform .1s, box-shadow .1s;
-    position: relative;
-  }
-  .color-cell:active { transform: scale(.9); }
-  .color-cell.active { box-shadow: 0 0 0 3px #fbbf24, 0 0 16px rgba(251,191,36,.6); }
-  .color-cell.locked { opacity: .4; cursor: not-allowed; filter: grayscale(.5); }
-  .color-cell.locked::after {
-    content: "🔒"; position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 14px; opacity: .9;
-  }
+  .color-cell { aspect-ratio: 1; border-radius: 10px; cursor: pointer; border: 2px solid rgba(255,255,255,.15); }
+  .color-cell.active { box-shadow: 0 0 0 3px #fbbf24; }
+  .color-cell.locked { opacity: .4; cursor: not-allowed; }
   .tune-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
-  .tune-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .tune-row:last-child { border-bottom: none; }
   .tune-row .label { flex: 1; font-size: 13px; font-weight: 600; }
-  .tune-row .label .desc { display: block; font-size: 11px; opacity: .55; font-weight: 500; margin-top: 2px; }
-  .tune-row .label .desc .pos { color: #4ade80; font-weight: 700; }
-  .tune-row .label .desc .pos.blue { color: #7dd3fc; }
-  .tune-row .label .desc .pos.purple { color: #c4b5fd; }
-  .tune-row .toggle {
-    width: 44px; height: 24px; border-radius: 14px;
-    background: rgba(255,255,255,.1);
-    position: relative; cursor: pointer;
-    transition: background .2s, opacity .2s;
-    flex: 0 0 auto;
-  }
-  .tune-row .toggle::after {
-    content: ""; position: absolute; top: 3px; left: 3px;
-    width: 18px; height: 18px; border-radius: 50%;
-    background: #94a3b8;
-    transition: transform .2s, background .2s;
-  }
+  .tune-row .toggle { width: 44px; height: 24px; border-radius: 14px; background: rgba(255,255,255,.1); position: relative; cursor: pointer; }
+  .tune-row .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #94a3b8; transition: .2s; }
   .tune-row .toggle.on { background: rgba(74,222,128,.35); }
   .tune-row .toggle.on::after { transform: translateX(20px); background: #4ade80; }
   .tune-row .toggle.purple.on { background: rgba(168,85,247,.4); }
   .tune-row .toggle.purple.on::after { background: #c4b5fd; }
-  .tune-row .toggle.locked { opacity: .55; cursor: not-allowed; }
-  .tune-row .toggle.locked::before {
-    content: "🔒"; position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 12px; z-index: 2; opacity: .9;
-  }
-  .tune-row button.buy {
-    font: inherit; font-size: 12px; font-weight: 800;
-    padding: 8px 12px; border-radius: 10px; border: none;
-    background: linear-gradient(180deg, #38bdf8, #0284c7);
-    color: #fff; cursor: pointer;
-    box-shadow: 0 3px 0 #075985, 0 6px 14px rgba(2,132,199,.35);
-    transition: transform .1s, opacity .15s;
-    white-space: nowrap;
-  }
-  .tune-row button.buy:active { transform: translateY(2px); }
-  .tune-row button.buy:disabled {
-    opacity: .5; cursor: not-allowed; box-shadow: none;
-    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.04));
-    color: #94a3b8; border: 1px solid rgba(255,255,255,.1);
-  }
-  .wheel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
-  .wheel-opt {
-    position: relative;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    padding: 10px 4px 8px;
-    background: rgba(255,255,255,.04);
-    border: 2px solid rgba(255,255,255,.1);
-    border-radius: 12px;
-    cursor: pointer;
-    font: inherit; color: #cbd5e1;
-    transition: transform .1s, border-color .15s, box-shadow .15s;
-    overflow: hidden;
-  }
-  .wheel-opt:active { transform: scale(.96); }
-  .wheel-opt.active {
-    border-color: #4ade80;
-    box-shadow: 0 0 0 2px rgba(74,222,128,.3), 0 0 14px rgba(74,222,128,.35);
-    background: linear-gradient(180deg, rgba(74,222,128,.1), rgba(74,222,128,.02));
-    color: #4ade80;
-  }
+  .tune-row .toggle.locked { opacity: .5; cursor: not-allowed; }
+  .tune-row button.buy { font: inherit; font-size: 12px; font-weight: 800; padding: 8px 12px; border-radius: 10px; border: none; background: linear-gradient(180deg,#38bdf8,#0284c7); color: #fff; cursor: pointer; white-space: nowrap; }
+  .tune-row button.buy:disabled { opacity: .5; cursor: not-allowed; background: rgba(255,255,255,.06); color: #94a3b8; }
+  .wheel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .wheel-opt { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; background: rgba(255,255,255,.04); border: 2px solid rgba(255,255,255,.1); border-radius: 12px; cursor: pointer; font: inherit; color: #cbd5e1; }
+  .wheel-opt.active { border-color: #4ade80; color: #4ade80; }
   .wheel-opt.locked { opacity: .55; cursor: not-allowed; }
-  .wheel-lock { position: absolute; top: 4px; right: 5px; font-size: 12px; }
-  .wheel-prev { width: 44px; height: 44px; }
-  .wheel-prev svg { width: 100%; height: 100%; display: block; }
-  .wheel-name { font-size: 11px; font-weight: 800; letter-spacing: .3px; }
-  .wheel-price { font-size: 10px; opacity: .7; font-weight: 600; }
-  .toast {
-    position: fixed; left: 50%; bottom: 100px;
-    transform: translateX(-50%) translateY(20px);
-    background: linear-gradient(180deg, #1e3a5f, #0f2440);
-    color: #7dd3fc; font-weight: 700; font-size: 13.5px;
-    padding: 10px 18px; border-radius: 12px;
-    border: 1px solid rgba(125,211,252,.4);
-    box-shadow: 0 12px 32px rgba(0,0,0,.5);
-    opacity: 0; pointer-events: none;
-    transition: opacity .25s, transform .25s;
-    z-index: 20000; max-width: 90vw; text-align: center;
-  }
+  .wheel-prev { width: 52px; height: 52px; }
+  .wheel-name { font-size: 11px; font-weight: 800; }
+  .wheel-price { font-size: 10px; opacity: .7; }
+
+  .daily-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 6px; }
+  .daily-day { padding: 10px 4px; border-radius: 10px; text-align: center; font-size: 10px; font-weight: 700; background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.1); position: relative; }
+  .daily-day .d { font-size: 8.5px; opacity: .6; display: block; margin-bottom: 2px; }
+  .daily-day .r { font-size: 11px; color: #fbbf24; font-weight: 900; }
+  .daily-day.claimed { opacity: .45; }
+  .daily-day.claimed::after { content: "✓"; position: absolute; top: 3px; right: 5px; color: #4ade80; font-size: 11px; }
+  .daily-day.today { border-color: #fbbf24; box-shadow: 0 0 0 2px rgba(251,191,36,.4); background: linear-gradient(180deg, rgba(251,191,36,.2), rgba(251,191,36,.05)); }
+  .daily-claim { width: 100%; margin-top: 12px; padding: 14px; font: inherit; font-size: 14px; font-weight: 900; border: none; border-radius: 12px; background: linear-gradient(180deg, #22c55e, #16a34a); color: #fff; cursor: pointer; letter-spacing: 1px; }
+  .daily-claim:disabled { opacity: .5; cursor: not-allowed; background: rgba(255,255,255,.1); }
+
+  .ach-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 8px; background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; }
+  .ach-item.done { background: linear-gradient(180deg, rgba(74,222,128,.12), rgba(74,222,128,.02)); border-color: rgba(74,222,128,.3); }
+  .ach-item .ico { font-size: 26px; }
+  .ach-item .info { flex: 1; }
+  .ach-item .info .name { font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+  .ach-item .info .desc { font-size: 11px; opacity: .7; }
+  .ach-item .rew { font-size: 11px; font-weight: 800; color: #fbbf24; white-space: nowrap; }
+  .ach-item .done-check { color: #4ade80; font-size: 22px; }
+
+  .quest-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; margin-bottom: 8px; }
+  .quest-item .ico { font-size: 24px; }
+  .quest-item .info { flex: 1; }
+  .quest-item .info .name { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
+  .quest-item .info .bar { height: 5px; background: rgba(255,255,255,.1); border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
+  .quest-item .info .fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #0284c7); }
+  .quest-item .info .prog { font-size: 10.5px; opacity: .7; }
+  .quest-item button { font: inherit; font-size: 12px; font-weight: 800; padding: 8px 12px; border-radius: 10px; border: none; background: linear-gradient(180deg, #22c55e, #16a34a); color: #fff; cursor: pointer; }
+  .quest-item button:disabled { opacity: .4; cursor: not-allowed; background: rgba(255,255,255,.1); }
+
+  .boss-overlay { position: fixed; inset: 0; background: rgba(2,6,20,.9); backdrop-filter: blur(10px); z-index: 25000; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .boss-overlay.show { display: flex; }
+  .boss-card { width: 100%; max-width: 500px; background: linear-gradient(180deg, #3a1414, #1a0606); border: 2px solid #ef4444; border-radius: 20px; padding: 20px; text-align: center; }
+  .boss-title { font-size: 20px; font-weight: 900; color: #fca5a5; letter-spacing: 1px; margin-bottom: 8px; }
+  .boss-sub { font-size: 12px; color: #fda4af; opacity: .8; margin-bottom: 16px; }
+  .boss-hp { height: 20px; background: rgba(0,0,0,.5); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+  .boss-hp .fill { height: 100%; background: linear-gradient(90deg, #ef4444, #dc2626); transition: width .2s; }
+  .boss-hp-text { font-size: 12px; color: #fca5a5; font-weight: 800; margin-bottom: 8px; }
+  .boss-car { font-size: 100px; margin: 12px 0; }
+  .boss-hit { width: 100%; padding: 20px; font: inherit; font-size: 18px; font-weight: 900; border: none; border-radius: 16px; background: linear-gradient(180deg,#ef4444,#b91c1c); color: #fff; cursor: pointer; letter-spacing: 1px; }
+  .boss-hit:active { transform: scale(.97); }
+  .boss-close { margin-top: 12px; background: none; border: none; color: #fda4af; font: inherit; font-size: 13px; cursor: pointer; opacity: .7; }
+
+  .prestige-card { background: linear-gradient(180deg, rgba(251,191,36,.15), rgba(217,119,6,.05)); border: 2px solid rgba(251,191,36,.5); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 12px; }
+  .prestige-card h3 { margin: 0 0 8px; font-size: 18px; color: #fbbf24; }
+  .prestige-card p { margin: 0 0 14px; font-size: 13px; color: #fcd34d; line-height: 1.5; }
+  .prestige-card .boost-line { font-size: 14px; font-weight: 900; color: #4ade80; margin: 12px 0; }
+  .prestige-btn { width: 100%; padding: 14px; font: inherit; font-size: 14px; font-weight: 900; border: none; border-radius: 12px; background: linear-gradient(180deg,#fbbf24,#d97706); color: #3a1f00; cursor: pointer; letter-spacing: 1px; }
+  .prestige-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .lb-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin-bottom: 8px; background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border-radius: 12px; border: 1px solid rgba(255,255,255,.08); }
+  .lb-item.me { border-color: rgba(251,191,36,.5); background: linear-gradient(180deg, rgba(251,191,36,.1), rgba(251,191,36,.02)); }
+  .lb-item .rank { font-size: 18px; font-weight: 900; width: 32px; text-align: center; }
+  .lb-item .rank.gold { color: #fbbf24; }
+  .lb-item .rank.silver { color: #cbd5e1; }
+  .lb-item .rank.bronze { color: #d97706; }
+  .lb-item .name { flex: 1; font-size: 13px; font-weight: 700; }
+  .lb-item .score { font-size: 13px; font-weight: 800; color: #fbbf24; }
+
+  .toast { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%) translateY(20px); background: linear-gradient(180deg,#1e3a5f,#0f2440); color: #7dd3fc; font-weight: 700; font-size: 13.5px; padding: 10px 18px; border-radius: 12px; border: 1px solid rgba(125,211,252,.4); opacity: 0; pointer-events: none; transition: .25s; z-index: 20000; max-width: 90vw; text-align: center; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.ok { border-color: rgba(74,222,128,.5); color: #4ade80; }
   .toast.err { border-color: rgba(239,68,68,.5); color: #fca5a5; }
   .toast.boost { border-color: rgba(251,146,60,.6); color: #fb923c; }
   .toast.bpan { border-color: rgba(168,85,247,.6); color: #c4b5fd; }
-  .float-money {
-    position: fixed; font-weight: 900; font-size: 20px;
-    color: #4ade80;
-    text-shadow: 0 2px 8px rgba(0,0,0,.7), 0 0 16px rgba(74,222,128,.6);
-    pointer-events: none; z-index: 9999;
-    transform: translate(-50%, 0); white-space: nowrap;
+  .toast.gold { border-color: rgba(251,191,36,.6); color: #fbbf24; }
+
+  .float-money { position: fixed; font-weight: 900; font-size: 20px; color: #4ade80; text-shadow: 0 2px 8px rgba(0,0,0,.7); pointer-events: none; z-index: 9999; transform: translate(-50%,0); white-space: nowrap; }
+  .float-money.big { color: #fbbf24; font-size: 26px; }
+  .float-money.space { color: #c4b5fd; font-size: 28px; }
+
+  .ach-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-120%); background: linear-gradient(180deg,#1a2743,#0e1730); border: 2px solid #fbbf24; border-radius: 16px; padding: 14px 20px; text-align: center; z-index: 21000; transition: transform .4s cubic-bezier(.2,1.4,.4,1); box-shadow: 0 20px 60px rgba(0,0,0,.7); max-width: 90vw; }
+  .ach-toast.show { transform: translateX(-50%) translateY(0); }
+  .ach-toast .ico { font-size: 36px; margin-bottom: 4px; }
+  .ach-toast .name { font-size: 14px; font-weight: 800; color: #fbbf24; }
+  .ach-toast .rew { font-size: 12px; color: #4ade80; margin-top: 4px; font-weight: 700; }
+
+  /* ===== АНИМАЦИЯ ГОНКИ (фотореалистичная) ===== */
+  .race-overlay {
+    position: fixed; inset: 0; z-index: 26000;
+    background: #0a0f1c;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
   }
-  .float-money.big { color: #fbbf24; font-size: 26px; text-shadow: 0 2px 8px rgba(0,0,0,.7), 0 0 20px rgba(251,191,36,.7); }
-  .float-money.space { color: #c4b5fd; font-size: 28px; text-shadow: 0 2px 8px rgba(0,0,0,.7), 0 0 24px rgba(168,85,247,.9); font-weight: 900; }
+  .race-scene { position: relative; width: 100%; height: 100%; overflow: hidden; }
+
+  /* НЕБО — реалистичное, с градиентом как на фото */
+  .race-sky {
+    position: absolute; top: 0; left: 0; right: 0; height: 32%;
+    background:
+      radial-gradient(ellipse at 50% 100%, #b8d4e8 0%, #93b8d6 30%, #6c95bd 60%, #4a7299 100%);
+  }
+  /* ОБЛАКА — реалистичные, слоистые */
+  .race-clouds {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 200px 30px at 15% 15%, rgba(255,255,255,.6), transparent 70%),
+      radial-gradient(ellipse 260px 40px at 45% 25%, rgba(255,255,255,.5), transparent 70%),
+      radial-gradient(ellipse 180px 25px at 75% 12%, rgba(255,255,255,.55), transparent 70%),
+      radial-gradient(ellipse 220px 35px at 90% 30%, rgba(255,255,255,.45), transparent 70%);
+    filter: blur(2px);
+  }
+
+  /* ДАЛЬНИЕ ГОРЫ — реалистичные, заснеженные */
+  .race-mountains {
+    position: absolute; top: 20%; left: 0; right: 0; height: 12%;
+    background: linear-gradient(180deg, #8092ae 0%, #5a6d8a 100%);
+    clip-path: polygon(
+      0% 100%, 0% 60%, 6% 30%, 10% 55%, 14% 25%, 18% 50%, 22% 20%, 27% 55%,
+      32% 30%, 36% 50%, 40% 25%, 44% 45%, 48% 15%, 53% 50%, 57% 28%, 62% 55%,
+      66% 30%, 70% 50%, 75% 22%, 80% 55%, 84% 35%, 88% 52%, 92% 25%, 96% 55%, 100% 40%,
+      100% 100%
+    );
+  }
+  /* Снежные шапки на горах */
+  .race-mountains::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #ffffff 0%, #e8f0f8 40%, transparent 70%);
+    clip-path: polygon(
+      0% 100%, 0% 60%, 6% 30%, 10% 55%, 14% 25%, 18% 50%, 22% 20%, 27% 55%,
+      32% 30%, 36% 50%, 40% 25%, 44% 45%, 48% 15%, 53% 50%, 57% 28%, 62% 55%,
+      66% 30%, 70% 50%, 75% 22%, 80% 55%, 84% 35%, 88% 52%, 92% 25%, 96% 55%, 100% 40%,
+      100% 42%, 96% 28%, 92% 27%, 88% 54%, 84% 37%, 80% 57%, 75% 24%, 70% 52%, 66% 32%,
+      62% 57%, 57% 30%, 53% 52%, 48% 17%, 44% 47%, 40% 27%, 36% 52%, 32% 32%, 27% 57%,
+      22% 22%, 18% 52%, 14% 27%, 10% 57%, 6% 32%
+    );
+    opacity: .9;
+  }
+
+  /* ЛЕС — реалистичный, слоистый */
+  .race-forest {
+    position: absolute; top: 30%; left: 0; right: 0; height: 8%;
+    background: linear-gradient(180deg, #3d5a34 0%, #2a4023 50%, #1e3019 100%);
+  }
+  .race-forest::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg,
+        transparent 0px, transparent 4px,
+        rgba(0,0,0,.3) 4px, rgba(0,0,0,.3) 6px,
+        transparent 6px, transparent 14px,
+        #1e3019 14px, #1e3019 20px,
+        transparent 20px, transparent 28px);
+    opacity: .8;
+  }
+  /* Второй ряд леса — дальше */
+  .race-forest-far {
+    position: absolute; top: 27%; left: 0; right: 0; height: 5%;
+    background: #4a6a3f;
+    filter: blur(1px);
+  }
+  .race-forest-far::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg,
+        transparent 0px, transparent 6px,
+        #3a5530 6px, #3a5530 14px,
+        transparent 14px, transparent 22px);
+    opacity: .7;
+  }
+
+  /* ТРАВА по бокам — реалистичная */
+  .race-grass {
+    position: absolute; top: 35%; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, #6b8f3a 0%, #557a2e 40%, #3f5a24 100%);
+  }
+  /* Травяная текстура */
+  .race-grass::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(95deg,
+        rgba(0,0,0,.06) 0px, rgba(0,0,0,.06) 2px,
+        transparent 2px, transparent 5px),
+      repeating-linear-gradient(85deg,
+        rgba(255,255,255,.04) 0px, rgba(255,255,255,.04) 2px,
+        transparent 2px, transparent 7px);
+    opacity: .9;
+  }
+  /* Ближняя трава — размытая */
+  .race-grass-near {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 15%;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.2) 100%);
+    filter: blur(2px);
+  }
+
+  /* === ДОРОГА — реалистичная, в перспективе, сужается к горизонту === */
+  .race-road {
+    position: absolute;
+    top: 35%;
+    bottom: 0;
+    left: 22%;
+    right: 22%;
+    background: linear-gradient(180deg, #58595e 0%, #4a4b50 20%, #3e3f44 50%, #35363a 100%);
+    clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+    box-shadow: inset 0 0 80px rgba(0,0,0,.5);
+  }
+  /* Тёмная фактура асфальта */
+  .race-road::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(0,0,0,.15) 1px, transparent 2px),
+      radial-gradient(circle at 70% 60%, rgba(0,0,0,.12) 1px, transparent 2px),
+      radial-gradient(circle at 40% 80%, rgba(0,0,0,.1) 1px, transparent 2px),
+      radial-gradient(circle at 85% 20%, rgba(255,255,255,.04) 1px, transparent 2px),
+      radial-gradient(circle at 30% 50%, rgba(255,255,255,.05) 1px, transparent 2px);
+    background-size: 40px 40px, 60px 60px, 80px 80px, 50px 50px, 70px 70px;
+    opacity: .8;
+  }
+
+  /* БЕЛЫЕ ОБОЧИНЫ по краям дороги */
+  .race-edge {
+    position: absolute;
+    top: 35%; bottom: 0;
+    width: 6px;
+    background: linear-gradient(180deg, #ffffff 0%, #e8e8e0 100%);
+    z-index: 4;
+    box-shadow: 0 0 8px rgba(0,0,0,.4);
+  }
+  .race-edge.left {
+    left: 22%;
+    clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
+    transform: translateX(-3px);
+  }
+  .race-edge.right {
+    right: 22%;
+    clip-path: polygon(0% 0%, 85% 0%, 100% 100%, 0% 100%);
+    transform: translateX(3px);
+  }
+
+  /* ПУНКТИРНАЯ РАЗМЕТКА по центру дороги — сужается к горизонту */
+  .race-center-line {
+    position: absolute;
+    top: 35%; bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2%;
+    z-index: 5;
+    pointer-events: none;
+    /* Перспектива: узкая сверху, широкая снизу */
+    clip-path: polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%);
+  }
+  .race-center-line .seg {
+    position: absolute;
+    left: 0; right: 0;
+    background: linear-gradient(180deg, #f8f8f0 0%, #e0e0d8 100%);
+    box-shadow: 0 2px 6px rgba(0,0,0,.5);
+    border-radius: 2px;
+  }
+
+  /* ФИНИШ — широкая белая полоса слева, в перспективе */
+  .race-finish-line {
+    position: absolute;
+    top: 35%; bottom: 0;
+    left: 20%;
+    width: 40px;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0e8 100%);
+    box-shadow: 0 0 30px rgba(255,255,255,.95), 0 0 60px rgba(255,255,255,.5);
+    z-index: 15;
+    /* Наклон как у левой обочины */
+    transform: skewY(-8deg);
+    transform-origin: top left;
+    clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
+  }
+  /* Чёрная пунктирная окантовка финиша (как на настоящей финишной полосе) */
+  .race-finish-line::after {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg,
+        #000 0px, #000 8px,
+        transparent 8px, transparent 16px),
+      repeating-linear-gradient(90deg,
+        #000 0px, #000 8px,
+        transparent 8px, transparent 16px);
+    background-size: 16px 16px, 16px 16px;
+    opacity: .15;
+  }
+  .race-finish-text {
+    position: absolute;
+    top: 22%; left: 5%;
+    color: #fff;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-shadow:
+      2px 2px 0 #000,
+      -1px -1px 0 #000,
+      0 0 20px rgba(255,255,255,.9),
+      0 0 40px rgba(255,220,90,.7);
+    z-index: 17;
+    font-family: 'Arial Black', system-ui, sans-serif;
+  }
+
+  /* СТАРТ — клетчатая полоса справа */
+  .race-start-line {
+    position: absolute;
+    top: 35%; bottom: 0;
+    right: 20%;
+    width: 40px;
+    background:
+      linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%),
+      linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    background-color: #ffffff;
+    box-shadow: 0 0 20px rgba(0,0,0,.7);
+    z-index: 15;
+    transform: skewY(8deg);
+    transform-origin: top right;
+    clip-path: polygon(0% 0%, 85% 0%, 100% 100%, 0% 100%);
+  }
+  .race-start-text {
+    position: absolute;
+    top: 22%; right: 5%;
+    color: #fff;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-shadow:
+      2px 2px 0 #000,
+      -1px -1px 0 #000,
+      0 0 20px rgba(255,255,255,.9),
+      0 0 40px rgba(255,220,90,.7);
+    z-index: 17;
+    font-family: 'Arial Black', system-ui, sans-serif;
+  }
+
+  /* МАШИНЫ */
+  .race-car {
+    position: absolute;
+    filter: drop-shadow(0 10px 16px rgba(0,0,0,.8));
+    z-index: 20;
+    line-height: 1;
+  }
+  .race-car-me { top: 55%; }
+  .race-car-op { top: 75%; }
+  .race-car svg { display: block; }
+
+  .race-shake { animation: raceShake .14s linear infinite; }
+  @keyframes raceShake {
+    0%, 100% { margin-top: 0; }
+    25% { margin-top: 2px; }
+    50% { margin-top: 0; }
+    75% { margin-top: -2px; }
+  }
+  .race-winner {
+    filter: drop-shadow(0 0 40px rgba(251,191,36,1)) drop-shadow(0 0 20px rgba(255,220,80,.9));
+    animation: raceBounce .5s ease-out;
+  }
+  @keyframes raceBounce {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.25); }
+    100% { transform: scale(1.1); }
+  }
+  .race-label {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    font-size: 14px; font-weight: 900; color: #fff;
+    letter-spacing: 2px; text-transform: uppercase;
+    text-shadow: 0 2px 12px rgba(0,0,0,.9);
+    z-index: 30;
+    background: rgba(0,0,0,.6);
+    padding: 5px 12px; border-radius: 8px;
+  }
+
+  /* Обратный отсчёт */
+  .race-countdown {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    pointer-events: none;
+    background: radial-gradient(circle at center, rgba(0,0,0,.5) 0%, rgba(0,0,0,.85) 80%);
+  }
+  .race-countdown .num {
+    font-family: 'Arial Black', system-ui, sans-serif;
+    font-size: 180px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(251,191,36,.9), 0 0 60px rgba(251,146,60,.7), 0 8px 20px rgba(0,0,0,.8);
+    line-height: 1;
+    animation: countPop 0.95s ease-out;
+  }
+  .race-countdown .num.start {
+    font-size: 110px;
+    color: #4ade80;
+    text-shadow: 0 0 40px rgba(74,222,128,1), 0 0 80px rgba(74,222,128,.6), 0 8px 20px rgba(0,0,0,.8);
+    letter-spacing: 6px;
+    animation: startZoom 0.6s ease-out;
+  }
+  @keyframes countPop {
+    0%   { transform: scale(3); opacity: 0; }
+    20%  { transform: scale(1); opacity: 1; }
+    80%  { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.4); opacity: 0; }
+  }
+  @keyframes startZoom {
+    0%   { transform: scale(0.4); opacity: 0; }
+    40%  { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="money-box">
-    <span>💰</span>
-    <span class="money" id="moneyEl">500</span>
-    <span class="rub">₽</span>
-  </div>
-  <div class="rates-box">
-    <div class="row"><span>за тап</span><b id="perClickEl">0 ₽</b></div>
-    <div class="row"><span>в секунду</span><b class="sec" id="perSecEl">0 ₽</b></div>
-  </div>
-</div>
-
-<div class="boost-bar">
-  <button class="boost-btn" id="boostBtn">
-    <span class="boost-ico">🔥</span>
-    <span class="boost-main">
-      <span class="boost-text">Авто-кликер +50%</span>
-      <span class="boost-sub">Смотреть рекламу · 30 минут буста</span>
-    </span>
-    <span class="boost-play">▶</span>
-  </button>
-  <div class="boost-active" id="boostActive" style="display:none;">
-    <span class="boost-ico">🔥</span>
-    <span style="flex:1;">Авто-кликер +50% активен</span>
-    <b id="boostTimer">30:00</b>
-  </div>
-</div>
-
-<div class="stage empty" id="stage">
-  <div class="garage-empty" id="emptyState">
-    <div class="big">🏚️</div>
-    У тебя пока нет тачки.<br>
-    Купи первую на <b style="color:#fbbf24">Б/У рынке</b> →
-  </div>
-  <div class="car-wrap" id="carWrap" style="display:none">
-    <div class="car-header">
-      <div class="car-name" id="carName"></div>
-      <div class="car-tag" id="carTag"></div>
+<div class="splash show" id="splashScreen">
+  <div class="splash-sky"></div>
+  <div class="splash-sun"></div>
+  <div class="splash-road"></div>
+  <div class="splash-content">
+    <div>
+      <div class="splash-logo">🏎️</div>
+      <h1 class="splash-title">ТАЧКА<br>КЛИКЕР</h1>
+      <div class="splash-sub">От копейки до Bugatti</div>
     </div>
-    <div id="carSvg"></div>
-    <div class="car-passive" id="carPassive"></div>
-    <div class="rust-meter" id="rustMeter">
-      <span>Ржавчина:</span>
-      <div class="bar"><div class="fill" id="rustFill"></div></div>
-      <span class="val" id="rustVal">25%</span>
+    <div>
+      <button class="splash-play" id="splashPlay">▶ ИГРАТЬ</button>
     </div>
   </div>
-  <div class="hint" id="hint" style="display:none">
-    <b>ЛКМ</b> — 1x · <b>ПКМ</b> — 5x · <span class="key hot">ПРОБЕЛ</span> — <b>8x</b> буст
+</div>
+
+<div class="rules" id="rulesScreen">
+  <div class="rules-inner">
+    <div class="rules-header">
+      <div class="rules-ico">📖</div>
+      <h1>Правила игры</h1>
+      <p>Прочти перед стартом</p>
+    </div>
+    <div class="rules-card">
+      <h2><span>🎯</span>Цель</h2>
+      <div class="rule-item"><div class="bullet">1</div><div>Собери все 21 машину.</div></div>
+      <div class="rule-item"><div class="bullet">2</div><div>Прокачивай двигатель и трансмиссию, участвуй в гонках.</div></div>
+    </div>
+    <div class="rules-card">
+      <h2><span>🎁</span>Механики</h2>
+      <div class="rule-item"><div class="bullet">📅</div><div><b>Ежедневные награды</b> — заходи каждый день.</div></div>
+      <div class="rule-item"><div class="bullet">🎁</div><div><b>Сундук</b> — раз в час.</div></div>
+      <div class="rule-item"><div class="bullet">📋</div><div><b>Задания</b> — 3 активных.</div></div>
+      <div class="rule-item"><div class="bullet">🏆</div><div><b>Достижения</b> — 23 штуки.</div></div>
+      <div class="rule-item"><div class="bullet">🏁</div><div><b>Гонки</b> — обратный отсчёт, реальный заезд.</div></div>
+      <div class="rule-item"><div class="bullet">👹</div><div><b>Босс дня</b> — крупная награда.</div></div>
+      <div class="rule-item"><div class="bullet">🌟</div><div><b>Престиж</b> — ×2 после всех 21 машины.</div></div>
+    </div>
+    <button class="rules-start" id="rulesStart">🚀 НАЧАТЬ ИГРУ</button>
   </div>
 </div>
 
-<div class="tabs">
-  <button data-tab="garage"><span class="ico">🚗</span>Гараж</button>
-  <button data-tab="market"><span class="ico">🏪</span>Б/У рынок</button>
-  <button data-tab="tuning"><span class="ico">🔧</span>Тюнинг</button>
+<div class="game" id="gameScreen">
+  <div class="topbar">
+    <div class="money-box">
+      <span>💰</span>
+      <span class="money" id="moneyEl">500</span>
+      <span class="rub">₽</span>
+    </div>
+    <div class="rates-box">
+      <div class="row"><span>за тап</span><b id="perClickEl">0 ₽</b></div>
+      <div class="row"><span>в секунду</span><b class="sec" id="perSecEl">0 ₽</b></div>
+    </div>
+  </div>
+
+  <div class="top-icons">
+    <button onclick="openDaily()"><span class="ico">📅</span><span class="lbl">Награды</span></button>
+    <button onclick="openQuests()"><span class="ico">📋</span><span class="lbl">Задания</span><span class="badge" id="questBadge" style="display:none;">!</span></button>
+    <button onclick="openAch()"><span class="ico">🏆</span><span class="lbl">Ачивки</span></button>
+    <button onclick="openLB()"><span class="ico">📊</span><span class="lbl">Топ</span></button>
+    <button onclick="openBoss()"><span class="ico">👹</span><span class="lbl">Босс</span></button>
+    <button onclick="openGarageUpgrades()"><span class="ico">⚙️</span><span class="lbl">Прокачка</span></button>
+    <button onclick="openRace()"><span class="ico">🏁</span><span class="lbl">Гонка</span></button>
+  </div>
+
+  <div class="boost-bar">
+    <button class="boost-btn" id="boostBtn">
+      <span class="boost-ico">🔥</span>
+      <span class="boost-main">
+        <span class="boost-text">Авто-кликер +50%</span>
+        <span class="boost-sub">Смотреть рекламу · 30 минут</span>
+      </span>
+    </button>
+    <div class="boost-active" id="boostActive" style="display:none;">
+      <span class="boost-ico">🔥</span>
+      <span style="flex:1;">Буст активен</span>
+      <b id="boostTimer">30:00</b>
+    </div>
+  </div>
+
+  <div class="chest-bar">
+    <button class="chest-btn" id="chestBtn">
+      <span class="chest-ico">🎁</span>
+      <span class="chest-main">
+        <span class="chest-text">Сундук удачи</span>
+        <span class="chest-sub" id="chestSub">Открой бесплатно</span>
+      </span>
+      <span class="chest-timer" id="chestTimer">Готов!</span>
+    </button>
+  </div>
+
+  <div class="collection-bar">
+    <div class="collection-inner">
+      <span>🏁 Коллекция:</span>
+      <div class="bar"><div class="fill" id="collFill" style="width: 0%"></div></div>
+      <b id="collText">0 / 21</b>
+    </div>
+  </div>
+
+  <div class="stage empty" id="stage">
+    <div class="garage-empty" id="emptyState">
+      <div class="big">🏚️</div>
+      Купи первую тачку на <b style="color:#fbbf24">Б/У рынке</b>
+    </div>
+    <div class="car-wrap" id="carWrap" style="display:none">
+      <div class="car-header">
+        <div class="car-name" id="carName"></div>
+        <div class="car-tag" id="carTag"></div>
+      </div>
+      <div id="carSvg"></div>
+      <div class="car-passive" id="carPassive"></div>
+      <div class="rust-meter">
+        <span>Ржавчина:</span>
+        <div class="bar"><div class="fill" id="rustFill"></div></div>
+        <span class="val" id="rustVal">25%</span>
+      </div>
+    </div>
+    <div class="hint" id="hint" style="display:none">
+      <b>ЛКМ</b> — 1x · <b>ПКМ</b> — 5x · <b>ПРОБЕЛ</b> — 8x
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button data-tab="garage"><span class="ico">🚗</span>Гараж</button>
+    <button data-tab="market"><span class="ico">🏪</span>Рынок</button>
+    <button data-tab="tuning"><span class="ico">🔧</span>Тюнинг</button>
+    <button data-tab="prestige"><span class="ico">🌟</span>Престиж</button>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="sheet-box">
+      <div class="sheet-grip"></div>
+      <div id="sheetContent"></div>
+    </div>
+  </div>
 </div>
 
-<div class="sheet" id="sheet">
-  <div class="sheet-box">
-    <div class="sheet-grip"></div>
-    <div id="sheetContent"></div>
+<div class="boss-overlay" id="bossOverlay">
+  <div class="boss-card">
+    <div class="boss-title">👹 БОСС ДНЯ</div>
+    <div class="boss-sub">Разбей тачку босса кликами!</div>
+    <div class="boss-car">🚙</div>
+    <div class="boss-hp-text">HP: <span id="bossHpText">1000</span> / 1000</div>
+    <div class="boss-hp"><div class="fill" id="bossHpFill" style="width:100%"></div></div>
+    <button class="boss-hit" id="bossHit">👊 УДАРИТЬ</button>
+    <button class="boss-close" onclick="closeBoss()">Уйти</button>
   </div>
+</div>
+
+<div class="ach-toast" id="achToast">
+  <div class="ico" id="achToastIco">🏆</div>
+  <div class="name" id="achToastName">Достижение!</div>
+  <div class="rew" id="achToastRew"></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const TUNE_BONUS = {
-  paint:    { clickPct: 0.50, passivePct: 0.00 },
-  tint:     { clickPct: 0.30, passivePct: 0.30 },
-  wheels:   { clickPct: 0.00, passivePct: 0.50 },
-  lowering: { clickPct: 0.25, passivePct: 0.25 },
+const STORAGE_KEY = 'carClicker_v38';
+let state = {
+  money: 500, currentCar: null, cars: {}, boostUntil: 0,
+  achievements: {}, quests: { list: [], lastRefresh: 0 },
+  daily: { lastClaim: 0, streak: 0 }, chest: { lastOpen: 0 },
+  boss: { lastDefeat: 0, currentHp: 1000, maxHp: 1000 },
+  stats: { totalClicks: 0, totalEarned: 0, totalTune: 0, playtime: 0, sessions: 1,
+    chestsOpened: 0, bossDefeated: 0, racesWon: 0, engineLevel: 0, transmissionLevel: 0 },
+  prestige: { count: 0, multiplier: 1 },
+  engine: { level: 0 }, transmission: { level: 0 },
+  race: { lastRace: 0, wins: 0, losses: 0, streak: 0 }
 };
-const BOOST_DURATION = 30 * 60 * 1000;
-const BOOST_MULT = 1.5;
-const SPACE_MULT = 8;
 
 const CARS = [
-  { id: 'vaz2107',    name: 'ВАЗ 2107',           price: 500,            income: 1,          passive: 0.5,    year: 1985, color: '#e8dfc8', shape: 'classic', tag: 'Классика. Легенда. 7-я серия.',
-    tune: { paint: 500,     tint: 300,     wheels: 800,     rust: 30,   lowering: 1200 } },
-  { id: 'vaz2109',    name: 'ВАЗ 2109',           price: 2500,           income: 4,          passive: 2,      year: 1990, color: '#2980b9', shape: 'hatch', tag: 'Спутник нового времени.',
-    tune: { paint: 1500,    tint: 800,     wheels: 2500,    rust: 100,  lowering: 4000 } },
-  { id: 'vaz2101',    name: 'ВАЗ 2101 Копейка',   price: 8000,           income: 10,         passive: 4,      year: 1974, color: '#e8dfc8', shape: 'classic', tag: 'С чего всё начиналось.',
-    tune: { paint: 3000,    tint: 1500,    wheels: 5000,    rust: 250,  lowering: 8000 } },
-  { id: 'moskvich',   name: 'Москвич 2140',       price: 20000,          income: 22,         passive: 8,      year: 1980, color: '#d3b87a', shape: 'classic', tag: 'Советский характер.',
-    tune: { paint: 6000,    tint: 3000,    wheels: 10000,   rust: 500,  lowering: 16000 } },
-  { id: 'oka',        name: 'Ока (ВАЗ 1111)',     price: 45000,          income: 45,         passive: 15,     year: 1995, color: '#f1c40f', shape: 'hatch', tag: 'Мал, да удал.',
-    tune: { paint: 12000,   tint: 6000,    wheels: 20000,   rust: 1000, lowering: 32000 } },
-  { id: 'niva',       name: 'Нива 4×4',           price: 100000,         income: 90,         passive: 30,     year: 1980, color: '#c0392b', shape: 'suv', tag: 'Легенда бездорожья.',
-    tune: { paint: 25000,   tint: 12000,   wheels: 40000,   rust: 2000, lowering: 65000 } },
-  { id: 'priora',     name: 'Лада Приора',        price: 250000,         income: 180,        passive: 60,     year: 2010, color: '#95a5a6', shape: 'modern', tag: 'Народный выбор.',
-    tune: { paint: 50000,   tint: 25000,   wheels: 80000,   rust: 5000, lowering: 130000 } },
-  { id: 'uazpickup',  name: 'УАЗ Пикап',          price: 550000,         income: 380,        passive: 130,    year: 2015, color: '#2c3e50', shape: 'pickup', tag: 'Рабочая лошадка.',
-    tune: { paint: 100000,  tint: 50000,   wheels: 170000,  rust: 10000,lowering: 270000 } },
-  { id: 'vesta',      name: 'Лада Веста',         price: 1200000,        income: 800,        passive: 280,    year: 2018, color: '#e67e22', shape: 'modern', tag: 'Новая волна.',
-    tune: { paint: 200000,  tint: 100000,  wheels: 350000,  rust: 20000,lowering: 560000 } },
-  { id: 'patriot',    name: 'УАЗ Патриот',        price: 2500000,        income: 1600,       passive: 550,    year: 2015, color: '#2c3e50', shape: 'suv', tag: 'Русский внедорожник.',
-    tune: { paint: 400000,  tint: 200000,  wheels: 700000,  rust: 40000,lowering: 1100000 } },
-  { id: 'mustang',    name: 'Ford Mustang',       price: 6000000,        income: 4000,       passive: 1400,   year: 1969, color: '#1c1c1c', shape: 'sport', tag: 'Американская мечта.',
-    tune: { paint: 800000,  tint: 400000,  wheels: 1500000, rust: 80000,lowering: 2200000 } },
-  { id: 'camry',      name: 'Toyota Camry',       price: 15000000,       income: 10000,      passive: 3500,   year: 2018, color: '#1c1c1c', shape: 'modern', tag: 'Мировой бестселлер.',
-    tune: { paint: 2000000, tint: 1000000, wheels: 3500000, rust: 200000,lowering: 5600000 } },
-  { id: 'bmwx5',      name: 'BMW X5',             price: 35000000,       income: 25000,      passive: 9000,   year: 2020, color: '#2c2c2c', shape: 'suv', tag: 'Удовольствие за рулём.',
-    tune: { paint: 5000000, tint: 2500000, wheels: 9000000, rust: 500000,lowering: 13000000 } },
-  { id: 'audirs6',    name: 'Audi RS6',           price: 80000000,       income: 60000,      passive: 22000,  year: 2021, color: '#4a4a4a', shape: 'modern', tag: 'Спорт в костюме.',
-    tune: { paint: 12000000,tint: 6000000, wheels: 20000000,rust: 1200000,lowering: 32000000 } },
-  { id: 'mercG',      name: 'Mercedes G-класс',   price: 180000000,      income: 150000,     passive: 55000,  year: 2020, color: '#1a1a1a', shape: 'suv', tag: 'Квадрат со смыслом.',
-    tune: { paint: 25000000,tint: 12000000,wheels: 45000000,rust: 2500000,lowering: 72000000 } },
-  { id: 'porsche911', name: 'Porsche 911',        price: 400000000,      income: 350000,     passive: 130000, year: 2022, color: '#dc2626', shape: 'sport', tag: 'Икона спорткаров.',
-    tune: { paint: 60000000,tint: 30000000,wheels: 100000000,rust: 6000000,lowering: 160000000 } },
-  { id: 'lambo',      name: 'Lamborghini Huracan',price: 900000000,      income: 800000,     passive: 300000, year: 2023, color: '#f1c40f', shape: 'sport', tag: 'Дерзость Милана.',
-    tune: { paint: 140000000,tint: 70000000,wheels: 240000000,rust: 14000000,lowering: 360000000 } },
-  { id: 'ferrari',    name: 'Ferrari 488',        price: 2000000000,     income: 2000000,    passive: 700000, year: 2022, color: '#dc2626', shape: 'sport', tag: 'Красный из Маранелло.',
-    tune: { paint: 300000000,tint: 150000000,wheels: 550000000,rust: 30000000,lowering: 800000000 } },
-  { id: 'rolls',      name: 'Rolls-Royce Phantom',price: 5000000000,     income: 5000000,    passive: 1800000,year: 2023, color: '#1c1c1c', shape: 'modern', tag: 'Тише только во сне.',
-    tune: { paint: 800000000,tint: 400000000,wheels: 1400000000,rust: 80000000,lowering: 2000000000 } },
-  { id: 'bugatti',    name: 'Bugatti Chiron',     price: 12000000000,    income: 12000000,   passive: 4500000,year: 2023, color: '#3498db', shape: 'sport', tag: 'Скорость звука.',
-    tune: { paint: 2000000000,tint: 1000000000,wheels: 3500000000,rust: 200000000,lowering: 5000000000 } },
-  { id: 'koenigsegg', name: 'Koenigsegg Jesko',   price: 30000000000,    income: 30000000,   passive: 12000000,year: 2023, color: '#1c1c1c', shape: 'sport', tag: 'Шведский снаряд.',
-    tune: { paint: 5000000000,tint: 2500000000,wheels: 8500000000,rust: 500000000,lowering: 12000000000 } },
+  { id: 'vaz2107',    name: 'ВАЗ 2107',    price: 500,         income: 1,       passive: 0.5,    year: 1985, color: '#e8dfc8', tag: 'Классика.', tune: { paint: 500,     tint: 300,     wheels: 800,     rust: 30,   lowering: 1200 } },
+  { id: 'vaz2109',    name: 'ВАЗ 2109',    price: 2500,        income: 4,       passive: 2,      year: 1990, color: '#2980b9', tag: 'Спутник.',  tune: { paint: 1500,    tint: 800,     wheels: 2500,    rust: 100,  lowering: 4000 } },
+  { id: 'vaz2101',    name: 'ВАЗ 2101',    price: 8000,        income: 10,      passive: 4,      year: 1974, color: '#e8dfc8', tag: 'Копейка.',  tune: { paint: 3000,    tint: 1500,    wheels: 5000,    rust: 250,  lowering: 8000 } },
+  { id: 'moskvich',   name: 'Москвич',     price: 20000,       income: 22,      passive: 8,      year: 1980, color: '#d3b87a', tag: 'Советский.',tune: { paint: 6000,    tint: 3000,    wheels: 10000,   rust: 500,  lowering: 16000 } },
+  { id: 'oka',        name: 'Ока',         price: 45000,       income: 45,      passive: 15,     year: 1995, color: '#f1c40f', tag: 'Мал да удал.', tune: { paint: 12000, tint: 6000,   wheels: 20000,   rust: 1000, lowering: 32000 } },
+  { id: 'niva',       name: 'Нива 4×4',    price: 100000,      income: 90,      passive: 30,     year: 1980, color: '#c0392b', tag: 'Бездорожье.',tune: { paint: 25000,  tint: 12000,   wheels: 40000,   rust: 2000, lowering: 65000 } },
+  { id: 'priora',     name: 'Лада Приора', price: 250000,      income: 180,     passive: 60,     year: 2010, color: '#95a5a6', tag: 'Народная.', tune: { paint: 50000,   tint: 25000,   wheels: 80000,   rust: 5000, lowering: 130000 } },
+  { id: 'uazpickup',  name: 'УАЗ Пикап',   price: 550000,      income: 380,     passive: 130,    year: 2015, color: '#2c3e50', tag: 'Рабочая.',  tune: { paint: 100000,  tint: 50000,   wheels: 170000,  rust: 10000,lowering: 270000 } },
+  { id: 'vesta',      name: 'Лада Веста',  price: 1200000,     income: 800,     passive: 280,    year: 2018, color: '#e67e22', tag: 'Новая.',    tune: { paint: 200000,  tint: 100000,  wheels: 350000,  rust: 20000,lowering: 560000 } },
+  { id: 'patriot',    name: 'УАЗ Патриот', price: 2500000,     income: 1600,    passive: 550,    year: 2015, color: '#2c3e50', tag: 'Русский.',  tune: { paint: 400000,  tint: 200000,  wheels: 700000,  rust: 40000,lowering: 1100000 } },
+  { id: 'mustang',    name: 'Ford Mustang',price: 6000000,     income: 4000,    passive: 1400,   year: 1969, color: '#1c1c1c', tag: 'Американская.', tune: { paint: 800000, tint: 400000, wheels: 1500000,rust: 80000,lowering: 2200000 } },
+  { id: 'camry',      name: 'Toyota Camry',price: 15000000,    income: 10000,   passive: 3500,   year: 2018, color: '#1c1c1c', tag: 'Бестселлер.', tune: { paint: 2000000,tint: 1000000, wheels: 3500000,rust: 200000,lowering: 5600000 } },
+  { id: 'bmwx5',      name: 'BMW X5',      price: 35000000,    income: 25000,   passive: 9000,   year: 2020, color: '#2c2c2c', tag: 'Удовольствие.', tune: { paint: 5000000,tint: 2500000, wheels: 9000000,rust: 500000,lowering: 13000000 } },
+  { id: 'audirs6',    name: 'Audi RS6',    price: 80000000,    income: 60000,   passive: 22000,  year: 2021, color: '#4a4a4a', tag: 'Спорт.',    tune: { paint: 12000000,tint: 6000000,wheels: 20000000,rust: 1200000,lowering: 32000000 } },
+  { id: 'mercG',      name: 'Mercedes G',  price: 180000000,   income: 150000,  passive: 55000,  year: 2020, color: '#1a1a1a', tag: 'Квадрат.',  tune: { paint: 25000000,tint: 12000000,wheels: 45000000,rust: 2500000,lowering: 72000000 } },
+  { id: 'porsche911', name: 'Porsche 911', price: 400000000,   income: 350000,  passive: 130000, year: 2022, color: '#dc2626', tag: 'Икона.',    tune: { paint: 60000000,tint: 30000000,wheels: 100000000,rust: 6000000,lowering: 160000000 } },
+  { id: 'lambo',      name: 'Lamborghini', price: 900000000,   income: 800000,  passive: 300000, year: 2023, color: '#f1c40f', tag: 'Дерзость.', tune: { paint: 140000000,tint: 70000000,wheels: 240000000,rust: 14000000,lowering: 360000000 } },
+  { id: 'ferrari',    name: 'Ferrari 488', price: 2000000000,  income: 2000000, passive: 700000, year: 2022, color: '#dc2626', tag: 'Маранелло.',tune: { paint: 300000000,tint: 150000000,wheels: 550000000,rust: 30000000,lowering: 800000000 } },
+  { id: 'rolls',      name: 'Rolls-Royce', price: 5000000000,  income: 5000000, passive: 1800000,year: 2023, color: '#1c1c1c', tag: 'Тише.',      tune: { paint: 800000000,tint: 400000000,wheels: 1400000000,rust: 80000000,lowering: 2000000000 } },
+  { id: 'bugatti',    name: 'Bugatti',     price: 12000000000, income: 12000000,passive: 4500000,year: 2023, color: '#3498db', tag: 'Скорость.',  tune: { paint: 2000000000,tint: 1000000000,wheels: 3500000000,rust: 200000000,lowering: 5000000000 } },
+  { id: 'koenigsegg', name: 'Koenigsegg',  price: 30000000000, income: 30000000,passive: 12000000,year: 2023, color: '#1c1c1c', tag: 'Снаряд.',   tune: { paint: 5000000000,tint: 2500000000,wheels: 8500000000,rust: 500000000,lowering: 12000000000 } },
 ];
+CARS.forEach(c => c.shape = c.id);
 
 const COLORS = [
-  { name: 'Красный',     hex: '#c0392b' },
-  { name: 'Синий',       hex: '#2980b9' },
-  { name: 'Зелёный',     hex: '#27ae60' },
-  { name: 'Жёлтый',      hex: '#f1c40f' },
-  { name: 'Чёрный',      hex: '#1c1c1c' },
-  { name: 'Белый',       hex: '#ecf0f1' },
-  { name: 'Серебристый', hex: '#95a5a6' },
-  { name: 'Бежевый',     hex: '#e8dfc8' },
-  { name: 'Фиолетовый',  hex: '#8e44ad' },
-  { name: 'Оранжевый',   hex: '#e67e22' },
-  { name: 'Розовый',     hex: '#e84393' },
-  { name: 'Хаки',        hex: '#6b7c3f' },
-  { name: 'Бирюзовый',   hex: '#16a085' },
-  { name: 'Вишнёвый',    hex: '#7c1f2b' },
+  { name: 'Красный', hex: '#c0392b' }, { name: 'Синий', hex: '#2980b9' }, { name: 'Зелёный', hex: '#27ae60' },
+  { name: 'Жёлтый', hex: '#f1c40f' }, { name: 'Чёрный', hex: '#1c1c1c' }, { name: 'Белый', hex: '#ecf0f1' },
+  { name: 'Серебристый', hex: '#95a5a6' }, { name: 'Бежевый', hex: '#e8dfc8' }, { name: 'Фиолетовый', hex: '#8e44ad' },
+  { name: 'Оранжевый', hex: '#e67e22' }, { name: 'Розовый', hex: '#e84393' }, { name: 'Хаки', hex: '#6b7c3f' },
+  { name: 'Бирюзовый', hex: '#16a085' }, { name: 'Вишнёвый', hex: '#7c1f2b' },
 ];
 
-const SHAPES = {
-  classic: {
-    body: "M 18,126 L 18,90 L 24,82 L 108,78 L 155,48 L 285,48 L 325,78 L 372,82 L 380,90 L 380,126 L 352,126 A 27,27 0 0 0 298,126 L 102,126 A 27,27 0 0 0 48,126 Z",
-    wheelR: 24, wheelWellR: 30,
-    wheels: [[75, 128], [325, 128]],
-    glass: "M 113,76 L 158,51 L 280,51 L 318,76 Z",
-    pillars: [
-      { x1: 158, y1: 51, x2: 158, y2: 76, w: 3 },
-      { x1: 218, y1: 51, x2: 218, y2: 76, w: 6 },
-      { x1: 280, y1: 51, x2: 280, y2: 76, w: 3 },
-    ],
-    doorLines: ["M 116,78 L 116,126", "M 218,76 L 218,126", "M 322,78 L 322,126"],
-    hoodLine: "M 30,84 L 108,80",
-    trunkLine: "M 322,80 L 372,84",
-    handles: [[186, 90], [244, 90]],
-    mirror: { x: 106, y: 68, w: 15, h: 11 },
-    headlight: { cx: 40, cy: 98, r: 11 },
-    turnSignal: { x: 32, y: 116, w: 16, h: 5 },
-    taillight: { x: 366, y: 90, w: 14, h: 22 },
-    bumperF: { x: 12, y: 116, w: 24, h: 14 },
-    bumperR: { x: 362, y: 116, w: 22, h: 14 },
-    beltLine: { x: 113, y: 76, w: 207, h: 2 },
-    sideTrim: { x: 116, y: 88, w: 256, h: 2.5 },
-    rubStrip: { x: 30, y: 122, w: 340, h: 3 },
-    rustZones: {
-      arches: [[75, 128], [325, 128]],
-      sill: { x: 60, y: 122, w: 280, h: 6 },
-      doors: [{ x: 116, y: 108, w: 96, h: 18 }, { x: 218, y: 108, w: 100, h: 18 }],
-    },
-    roofRails: null, spoiler: null,
-  },
-  hatch: {
-    body: "M 20,126 L 20,92 L 26,84 L 108,80 L 158,52 L 268,52 L 292,52 L 322,80 L 368,84 Q 376,86 378,94 L 378,126 L 350,126 A 26,26 0 0 0 298,126 L 100,126 A 26,26 0 0 0 48,126 Z",
-    wheelR: 23, wheelWellR: 29,
-    wheels: [[74, 128], [324, 128]],
-    glass: "M 116,80 L 162,55 L 262,55 L 288,55 L 312,80 Z",
-    pillars: [
-      { x1: 162, y1: 55, x2: 162, y2: 80, w: 3 },
-      { x1: 218, y1: 55, x2: 218, y2: 80, w: 6 },
-      { x1: 262, y1: 55, x2: 262, y2: 80, w: 3 },
-      { x1: 290, y1: 55, x2: 290, y2: 80, w: 3 },
-    ],
-    doorLines: ["M 120,82 L 120,126", "M 220,80 L 220,126"],
-    hoodLine: "M 32,86 L 108,82",
-    trunkLine: "M 292,54 L 320,80",
-    handles: [[184, 94], [244, 94]],
-    mirror: { x: 108, y: 70, w: 14, h: 10 },
-    headlight: { cx: 42, cy: 100, r: 10 },
-    turnSignal: { x: 34, y: 116, w: 14, h: 5 },
-    taillight: { x: 364, y: 92, w: 14, h: 20 },
-    bumperF: { x: 14, y: 116, w: 22, h: 14 },
-    bumperR: { x: 362, y: 116, w: 20, h: 14 },
-    beltLine: { x: 116, y: 80, w: 196, h: 2 },
-    sideTrim: { x: 120, y: 92, w: 250, h: 2 },
-    rubStrip: { x: 30, y: 122, w: 340, h: 3 },
-    rustZones: {
-      arches: [[74, 128], [324, 128]],
-      sill: { x: 60, y: 122, w: 290, h: 6 },
-      doors: [{ x: 120, y: 108, w: 98, h: 18 }, { x: 220, y: 108, w: 100, h: 18 }],
-    },
-    roofRails: null, spoiler: null,
-  },
-  modern: {
-    body: "M 18,126 L 18,98 L 22,86 Q 30,76 60,72 L 112,68 L 148,66 L 178,48 Q 188,42 202,42 L 272,42 Q 286,44 296,54 L 316,66 L 352,70 Q 374,76 378,94 L 378,126 L 350,126 A 27,27 0 0 0 296,126 L 100,126 A 27,27 0 0 0 46,126 Z",
-    wheelR: 25, wheelWellR: 31,
-    wheels: [[74, 128], [326, 128]],
-    glass: "M 122,66 L 178,48 Q 184,46 194,46 L 218,46 L 218,66 Z M 226,46 L 268,46 Q 276,48 282,54 L 300,66 L 226,66 Z",
-    pillars: [
-      { x1: 148, y1: 66, x2: 178, y2: 48, w: 3 },
-      { x1: 222, y1: 46, x2: 222, y2: 66, w: 5 },
-    ],
-    doorLines: ["M 118,68 L 118,126", "M 222,66 L 222,126"],
-    hoodLine: "M 30,84 L 115,70",
-    trunkLine: "M 300,58 L 352,72",
-    handles: [[182, 88], [246, 88]],
-    mirror: { x: 110, y: 62, w: 14, h: 10 },
-    headlight: { cx: 42, cy: 92, r: 10 },
-    turnSignal: { x: 36, y: 108, w: 14, h: 5 },
-    taillight: { x: 366, y: 84, w: 12, h: 20 },
-    bumperF: { x: 12, y: 116, w: 24, h: 14 },
-    bumperR: { x: 362, y: 116, w: 22, h: 14 },
-    beltLine: { x: 118, y: 66, w: 240, h: 2 },
-    sideTrim: { x: 118, y: 90, w: 256, h: 2.5 },
-    rubStrip: null,
-    rustZones: {
-      arches: [[74, 128], [326, 128]],
-      sill: { x: 60, y: 122, w: 290, h: 6 },
-      doors: [{ x: 118, y: 108, w: 100, h: 18 }, { x: 222, y: 108, w: 100, h: 18 }],
-    },
-    roofRails: null, spoiler: null,
-  },
-  suv: {
-    body: "M 18,126 L 18,80 L 22,64 Q 28,48 60,44 L 118,40 L 148,40 L 168,20 Q 178,14 194,14 L 268,14 Q 284,16 292,24 L 316,44 L 352,48 Q 376,56 378,74 L 378,126 L 350,126 A 29,29 0 0 0 292,126 L 100,126 A 29,29 0 0 0 42,126 Z",
-    wheelR: 28, wheelWellR: 34,
-    wheels: [[72, 126], [326, 126]],
-    glass: "M 122,42 L 150,22 Q 156,20 166,20 L 218,20 L 218,42 Z M 226,20 L 262,20 Q 274,22 280,28 L 296,42 L 226,42 Z",
-    pillars: [
-      { x1: 148, y1: 40, x2: 168, y2: 20, w: 3 },
-      { x1: 222, y1: 20, x2: 222, y2: 42, w: 6 },
-    ],
-    doorLines: ["M 118,44 L 118,126", "M 222,42 L 222,126"],
-    hoodLine: "M 32,58 L 115,42",
-    trunkLine: "M 300,26 L 352,50",
-    handles: [[176, 68], [244, 68]],
-    mirror: { x: 112, y: 54, w: 15, h: 11 },
-    headlight: { cx: 40, cy: 76, r: 9 },
-    turnSignal: { x: 34, y: 92, w: 14, h: 6 },
-    taillight: { x: 366, y: 68, w: 12, h: 24 },
-    bumperF: { x: 12, y: 108, w: 26, h: 16 },
-    bumperR: { x: 360, y: 108, w: 22, h: 16 },
-    beltLine: { x: 118, y: 42, w: 200, h: 2 },
-    sideTrim: { x: 118, y: 96, w: 240, h: 2.5 },
-    rubStrip: { x: 30, y: 104, w: 340, h: 3 },
-    rustZones: {
-      arches: [[72, 126], [326, 126]],
-      sill: { x: 55, y: 118, w: 300, h: 8 },
-      doors: [{ x: 118, y: 104, w: 100, h: 20 }, { x: 222, y: 104, w: 100, h: 20 }],
-    },
-    roofRails: [[188, 282, 12]],
-    spoiler: null,
-  },
-  pickup: {
-    body: "M 18,126 L 18,84 L 22,68 Q 30,56 60,52 L 118,48 L 142,48 L 168,24 Q 176,18 192,18 L 240,18 Q 252,18 258,26 L 278,48 L 282,48 L 282,86 L 374,86 Q 380,88 380,108 L 380,126 L 352,126 A 28,28 0 0 0 296,126 L 100,126 A 28,28 0 0 0 46,126 Z",
-    wheelR: 26, wheelWellR: 32,
-    wheels: [[72, 126], [324, 126]],
-    glass: "M 122,48 L 172,24 Q 178,22 188,22 L 216,22 L 216,48 Z",
-    pillars: [
-      { x1: 148, y1: 48, x2: 168, y2: 24, w: 3 },
-    ],
-    doorLines: ["M 118,50 L 118,126", "M 220,26 L 220,126"],
-    hoodLine: "M 30,62 L 115,52",
-    trunkLine: null,
-    handles: [[180, 78]],
-    mirror: { x: 108, y: 56, w: 15, h: 11 },
-    headlight: { cx: 40, cy: 80, r: 10 },
-    turnSignal: { x: 34, y: 96, w: 14, h: 5 },
-    taillight: { x: 366, y: 94, w: 12, h: 18 },
-    bumperF: { x: 12, y: 112, w: 24, h: 14 },
-    bumperR: { x: 360, y: 116, w: 22, h: 12 },
-    beltLine: { x: 118, y: 50, w: 164, h: 2 },
-    sideTrim: { x: 118, y: 82, w: 260, h: 2.5 },
-    rubStrip: { x: 30, y: 108, w: 340, h: 3 },
-    rustZones: {
-      arches: [[72, 126], [324, 126]],
-      sill: { x: 55, y: 118, w: 310, h: 7 },
-      doors: [{ x: 118, y: 108, w: 100, h: 18 }],
-    },
-    roofRails: null, spoiler: null,
-  },
-  sport: {
-    body: "M 12,128 L 12,106 Q 14,90 40,82 L 100,76 L 148,70 L 178,52 Q 190,44 208,42 L 268,42 Q 286,44 300,58 L 332,78 L 360,82 Q 386,88 388,106 L 388,128 L 360,128 A 26,26 0 0 0 308,128 L 100,128 A 26,26 0 0 0 48,128 Z",
-    wheelR: 24, wheelWellR: 30,
-    wheels: [[74, 130], [328, 130]],
-    glass: "M 178,66 L 200,50 Q 206,48 216,48 L 232,48 L 232,66 Z M 240,48 L 264,48 Q 272,52 278,58 L 296,66 L 240,66 Z",
-    pillars: [
-      { x1: 158, y1: 68, x2: 178, y2: 52, w: 3 },
-      { x1: 236, y1: 48, x2: 236, y2: 66, w: 5 },
-    ],
-    doorLines: ["M 158,72 L 158,128"],
-    hoodLine: "M 24,92 L 145,74",
-    trunkLine: "M 300,60 L 366,84",
-    handles: [[180, 82]],
-    mirror: { x: 148, y: 64, w: 14, h: 9 },
-    headlight: { cx: 34, cy: 94, r: 8 },
-    turnSignal: { x: 28, y: 108, w: 14, h: 5 },
-    taillight: { x: 376, y: 86, w: 12, h: 14 },
-    bumperF: { x: 8, y: 118, w: 22, h: 12 },
-    bumperR: { x: 376, y: 118, w: 16, h: 12 },
-    beltLine: { x: 158, y: 72, w: 220, h: 2 },
-    sideTrim: null,
-    rubStrip: null,
-    rustZones: {
-      arches: [[74, 130], [328, 130]],
-      sill: { x: 50, y: 122, w: 320, h: 5 },
-      doors: [{ x: 158, y: 112, w: 80, h: 16 }],
-    },
-    roofRails: null,
-    spoiler: { x: 332, y: 68, w: 48, h: 5 },
-  },
-};
-
-const STORAGE_KEY = 'carClicker_v17';
-let state = { money: 500, currentCar: null, cars: {}, boostUntil: 0 };
-let busyAd = false;
-
-async function saveState() {
-  const data = JSON.stringify(state);
-  try {
-    if (window.vkBridge && typeof vkBridge.send === 'function') {
-      await vkBridge.send('VKWebAppStorageSet', { key: STORAGE_KEY, value: data });
-    }
-  } catch (e) {}
-  try { localStorage.setItem(STORAGE_KEY, data); } catch (e) {}
+function defaultShape() {
+  return {
+    body: "M 20,140 L 20,110 Q 20,100 34,98 L 120,92 L 152,58 L 290,58 Q 300,58 306,66 L 330,90 L 372,94 Q 382,98 382,108 L 382,140 L 344,140 A 34,34 0 0 0 276,140 L 124,140 A 34,34 0 0 0 56,140 Z",
+    wheelR: 28, wheelWellR: 35, wheels: [[90,140],[310,140]],
+    glass: "M 152,88 L 180,60 Q 184,56 192,56 L 288,56 Q 296,56 300,62 L 322,88 Z",
+    pillars: [{x1:180,y1:57,x2:180,y2:88,w:4},{x1:228,y1:56,x2:228,y2:88,w:7}],
+    doorLines: ["M 152,91 L 152,138","M 228,90 L 228,138"],
+    handles: [[188,108],[252,108]],
+    mirror: {x:148,y:80,w:16,h:11},
+    headlight: {type:'rect', x:30, y:104, w:28, h:14},
+    taillight: {x:370, y:106, w:14, h:24},
+    bumperF: {x:14, y:126, w:28, h:16},
+    bumperR: {x:364, y:126, w:26, h:16},
+    rustZones: { arches:[[90,140],[310,140]], sill:{x:80, y:132, w:258, h:7} }
+  };
 }
-async function loadState() {
-  try {
-    if (window.vkBridge && typeof vkBridge.send === 'function') {
-      const res = await vkBridge.send('VKWebAppStorageGet', { keys: [STORAGE_KEY] });
-      if (res && res.keys && res.keys[0] && res.keys[0].value) return JSON.parse(res.keys[0].value);
-    }
-  } catch (e) {}
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  return null;
-}
+const SHAPES = {};
+CARS.forEach(c => { SHAPES[c.id] = defaultShape(); });
 
-function formatMoney(n) { n = Math.floor(n); return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
-function formatRate(n) {
-  if (n === 0) return '0';
-  if (n < 10) return n.toFixed(1);
-  if (n < 1000) return Math.round(n).toString();
-  return formatMoney(n);
-}
+const ACHIEVEMENTS = [
+  { id: 'first_car', name: 'Первая ласточка', desc: 'Купи первую машину', ico: '🚗', rewMoney: 500, check: s => Object.keys(s.cars).length >= 1 },
+  { id: 'car_5', name: 'Коллекционер', desc: '5 машин', ico: '🚙', rewMoney: 5000, check: s => Object.keys(s.cars).length >= 5 },
+  { id: 'car_10', name: 'Автолюбитель', desc: '10 машин', ico: '🏎️', rewMoney: 100000, check: s => Object.keys(s.cars).length >= 10 },
+  { id: 'car_15', name: 'Автопарк', desc: '15 машин', ico: '🚚', rewMoney: 5000000, check: s => Object.keys(s.cars).length >= 15 },
+  { id: 'car_all', name: 'Полный гараж', desc: 'Все 21 машина', ico: '👑', rewMoney: 100000000, check: s => Object.keys(s.cars).length >= 21 },
+  { id: 'click_100', name: 'Разминка', desc: '100 кликов', ico: '👆', rewMoney: 200, check: s => s.stats.totalClicks >= 100 },
+  { id: 'click_1k', name: 'Кликер', desc: '1000 кликов', ico: '💪', rewMoney: 2000, check: s => s.stats.totalClicks >= 1000 },
+  { id: 'click_10k', name: 'Маньяк', desc: '10 000 кликов', ico: '🔥', rewMoney: 50000, check: s => s.stats.totalClicks >= 10000 },
+  { id: 'click_100k', name: 'Машина кликов', desc: '100 000 кликов', ico: '⚡', rewMoney: 2000000, check: s => s.stats.totalClicks >= 100000 },
+  { id: 'earn_1k', name: 'Первая тысяча', desc: 'Заработай 1 000 ₽', ico: '💵', rewMoney: 100, check: s => s.stats.totalEarned >= 1000 },
+  { id: 'earn_100k', name: 'Сотка', desc: 'Заработай 100 000 ₽', ico: '💰', rewMoney: 5000, check: s => s.stats.totalEarned >= 100000 },
+  { id: 'earn_10m', name: 'Миллионер', desc: 'Заработай 10 млн ₽', ico: '💎', rewMoney: 500000, check: s => s.stats.totalEarned >= 10000000 },
+  { id: 'earn_1b', name: 'Миллиардер', desc: 'Заработай 1 млрд ₽', ico: '🏦', rewMoney: 50000000, check: s => s.stats.totalEarned >= 1000000000 },
+  { id: 'streak_3', name: 'Три дня', desc: 'Заходи 3 дня подряд', ico: '📅', rewMoney: 3000, check: s => s.daily.streak >= 3 },
+  { id: 'streak_7', name: 'Неделя', desc: 'Заходи 7 дней', ico: '🗓️', rewMoney: 50000, check: s => s.daily.streak >= 7 },
+  { id: 'tune_10', name: 'Тюнинг-мастер', desc: '10 улучшений', ico: '🔧', rewMoney: 10000, check: s => s.stats.totalTune >= 10 },
+  { id: 'tune_50', name: 'Гаражный гуру', desc: '50 улучшений', ico: '⚙️', rewMoney: 500000, check: s => s.stats.totalTune >= 50 },
+  { id: 'chest_5', name: 'Удачливый', desc: 'Открой 5 сундуков', ico: '🎁', rewMoney: 5000, check: s => s.stats.chestsOpened >= 5 },
+  { id: 'boss_1', name: 'Охотник', desc: 'Победи первого босса', ico: '👹', rewMoney: 20000, check: s => s.stats.bossDefeated >= 1 },
+  { id: 'boss_5', name: 'Гроза боссов', desc: '5 боссов', ico: '🗡️', rewMoney: 500000, check: s => s.stats.bossDefeated >= 5 },
+  { id: 'race_1', name: 'Первая гонка', desc: 'Выиграй первую гонку', ico: '🏁', rewMoney: 5000, check: s => s.stats.racesWon >= 1 },
+  { id: 'race_10', name: 'Гонщик', desc: '10 побед в гонках', ico: '🏆', rewMoney: 100000, check: s => s.stats.racesWon >= 10 },
+  { id: 'race_50', name: 'Легенда трека', desc: '50 побед в гонках', ico: '👑', rewMoney: 5000000, check: s => s.stats.racesWon >= 50 },
+];
+
+const QUEST_POOL = [
+  { id: 'q_clicks_50', name: '50 кликов', ico: '👆', target: 50, rew: 500, type: 'clicks' },
+  { id: 'q_clicks_300', name: '300 кликов', ico: '👆', target: 300, rew: 5000, type: 'clicks' },
+  { id: 'q_clicks_2000', name: '2000 кликов', ico: '👆', target: 2000, rew: 50000, type: 'clicks' },
+  { id: 'q_paint', name: 'Покрась машину', ico: '🎨', target: 1, rew: 2000, type: 'paint' },
+  { id: 'q_tint', name: 'Сделай тонировку', ico: '🌑', target: 1, rew: 2000, type: 'tint' },
+  { id: 'q_wheels', name: 'Купи диски', ico: '⚙️', target: 1, rew: 3000, type: 'wheels' },
+  { id: 'q_buycar', name: 'Купи машину', ico: '🚗', target: 1, rew: 5000, type: 'buycar' },
+  { id: 'q_boost', name: 'Активируй буст', ico: '🔥', target: 1, rew: 1500, type: 'boost' },
+  { id: 'q_chest', name: 'Открой сундук', ico: '🎁', target: 1, rew: 2500, type: 'chest' },
+  { id: 'q_race_1', name: 'Выиграй гонку', ico: '🏁', target: 1, rew: 5000, type: 'race' },
+];
+
 function getCar(id) { return CARS.find(c => c.id === id); }
 function isOwned(id) { return !!state.cars[id]; }
+function formatMoney(n) { n = Math.floor(n); return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+function formatRate(n) { if (n === 0) return '0'; if (n < 10) return n.toFixed(1); if (n < 1000) return Math.round(n).toString(); return formatMoney(n); }
+
 function carState(id) {
   if (state.cars[id]) {
     const cs = state.cars[id];
     if (typeof cs.lowering !== 'boolean') cs.lowering = false;
-    if (typeof cs.wheels === 'boolean') cs.wheels = cs.wheels ? 'alloy' : 'steel';
     if (typeof cs.wheels !== 'string') cs.wheels = 'steel';
     return cs;
   }
-  return { rust: 25, color: null, tint: false, wheels: 'steel', lowering: false, __temp: true };
+  return { rust: 25, color: null, tint: false, wheels: 'steel', lowering: false };
 }
-function hasUpgradedWheels(cs) { return cs.wheels && cs.wheels !== 'steel'; }
-function boostMult() { return (state.boostUntil && state.boostUntil > Date.now()) ? BOOST_MULT : 1; }
+function boostMult() {
+  let m = (state.boostUntil && state.boostUntil > Date.now()) ? 1.5 : 1;
+  m *= (state.prestige.multiplier || 1);
+  return m;
+}
 function boostActive() { return state.boostUntil && state.boostUntil > Date.now(); }
+
+const TUNE_BONUS = {
+  paint: { clickPct: 0.50, passivePct: 0.00 }, tint: { clickPct: 0.30, passivePct: 0.30 },
+  wheels: { clickPct: 0.00, passivePct: 0.50 }, lowering: { clickPct: 0.25, passivePct: 0.25 },
+};
+const BOOST_DURATION = 30 * 60 * 1000;
+const CHEST_COOLDOWN = 60 * 60 * 1000;
+const BOSS_MAX_HP = 1000;
+
 function clickIncome(id) {
   const c = getCar(id); if (!c) return 0;
   const cs = carState(id);
   const rustMult = 1 - cs.rust / 100;
   let m = 1;
-  if (cs.color)  m += TUNE_BONUS.paint.clickPct;
-  if (cs.tint)   m += TUNE_BONUS.tint.clickPct;
+  if (cs.color) m += TUNE_BONUS.paint.clickPct;
+  if (cs.tint) m += TUNE_BONUS.tint.clickPct;
   if (cs.lowering) m += TUNE_BONUS.lowering.clickPct;
   return Math.max(0, c.income * rustMult * m * boostMult());
 }
@@ -769,18 +877,15 @@ function passiveOf(id) {
   const cs = carState(id);
   const rustMult = 1 - cs.rust / 100;
   let m = 1;
-  if (cs.tint)   m += TUNE_BONUS.tint.passivePct;
-  if (hasUpgradedWheels(cs)) m += TUNE_BONUS.wheels.passivePct;
+  if (cs.tint) m += TUNE_BONUS.tint.passivePct;
+  if (cs.wheels && cs.wheels !== 'steel') m += TUNE_BONUS.wheels.passivePct;
   if (cs.lowering) m += TUNE_BONUS.lowering.passivePct;
   return Math.max(0, c.passive * rustMult * m * boostMult());
 }
-function totalPassive() {
-  let t = 0;
-  for (const id in state.cars) if (getCar(id)) t += passiveOf(id);
-  return t;
-}
-function tuneClickBonus(car, type)   { return TUNE_BONUS[type] ? car.income  * TUNE_BONUS[type].clickPct   : 0; }
-function tunePassiveBonus(car, type) { return TUNE_BONUS[type] ? car.passive * TUNE_BONUS[type].passivePct : 0; }
+function totalPassive() { let t = 0; for (const id in state.cars) if (getCar(id)) t += passiveOf(id); return t; }
+
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
+function loadState() { try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {} return null; }
 
 function lighten(hex, amt) {
   const c = parseInt(hex.replace('#',''), 16);
@@ -800,744 +905,769 @@ function generateRust(shape, rustPercent) {
       const count = Math.round(2 + intensity * 4);
       for (let i = 0; i < count; i++) {
         const a = Math.PI + (i / count) * Math.PI;
-        const jitter = (Math.random() - 0.5) * 6;
-        const x = cx + Math.cos(a) * (R - 2) + jitter;
-        const y = cy + Math.sin(a) * (R - 2);
-        spots.push({ x, y, r: 4 + Math.random() * 5 });
+        spots.push({ x: cx + Math.cos(a) * (R - 3), y: cy + Math.sin(a) * (R - 3), r: 3 + Math.random() * 4 });
       }
     });
   }
-  if (shape.rustZones && shape.rustZones.sill) {
-    const s = shape.rustZones.sill;
-    const count = Math.round(3 + intensity * 6);
-    for (let i = 0; i < count; i++) {
-      const x = s.x + 10 + Math.random() * (s.w - 20);
-      const y = s.y + 1 + Math.random() * (s.h - 2);
-      spots.push({ x, y, r: 3 + Math.random() * 4 });
-    }
-  }
-  if (shape.rustZones && shape.rustZones.doors) {
-    shape.rustZones.doors.forEach(d => {
-      const count = Math.round(2 + intensity * 4);
-      for (let i = 0; i < count; i++) {
-        const x = d.x + 6 + Math.random() * (d.w - 12);
-        const y = d.y + 2 + Math.random() * (d.h - 4);
-        spots.push({ x, y, r: 3 + Math.random() * 4 });
-      }
-    });
-  }
-  return spots.map(s => `
-    <g opacity="${0.55 + intensity * 0.4}">
-      <circle cx="${s.x}" cy="${s.y}" r="${s.r}" fill="#4a2508"/>
-      <circle cx="${s.x - 1}" cy="${s.y - 1}" r="${s.r * 0.65}" fill="#7d4520"/>
-      <circle cx="${s.x - 1.5}" cy="${s.y - 1.5}" r="${s.r * 0.38}" fill="#a05a2a"/>
-      <circle cx="${s.x + 1.2}" cy="${s.y + 1.2}" r="${s.r * 0.35}" fill="#2a1405"/>
-    </g>
-  `).join('');
+  return spots.map(s => '<circle cx="' + s.x + '" cy="' + s.y + '" r="' + s.r + '" fill="#5c2f0e" opacity="' + (0.55 + intensity * 0.4) + '"/>').join('');
 }
 
-function wheelInner(cx, cy, R, kind, uid, cs) {
-  const bolts = Array.from({length: 5}).map((_, i) => {
-    const a = (i * 72 - 90) * Math.PI / 180;
-    const bx = cx + Math.cos(a) * R * 0.30;
-    const by = cy + Math.sin(a) * R * 0.30;
-    return `<circle cx="${bx}" cy="${by}" r="${R * 0.05}" fill="#2a2a2a" stroke="#0a0a0a" stroke-width="0.4"/>`;
+function wheelInner(cx, cy, R, kind, uid) {
+  const rimR = R * 0.72, hubR = R * 0.22, boltDist = R * 0.36, boltR = R * 0.055, discR = R * 0.55;
+  const tread = Array.from({length: 24}).map((_, i) => {
+    const a = (i * 15) * Math.PI / 180;
+    return '<line x1="' + (cx + Math.cos(a) * (R * 0.88)) + '" y1="' + (cy + Math.sin(a) * (R * 0.88)) + '" x2="' + (cx + Math.cos(a) * (R * 0.98)) + '" y2="' + (cy + Math.sin(a) * (R * 0.98)) + '" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round"/>';
   }).join('');
-
-  if (kind === 'steel') {
-    const holeR = R * 0.09;
-    const dist  = R * 0.44;
-    const holes = [45, 135, 225, 315].map(a => {
-      const rad = a * Math.PI / 180;
-      return `<circle cx="${cx + Math.cos(rad) * dist}" cy="${cy + Math.sin(rad) * dist}" r="${holeR}" fill="#0a0a0a"/>`;
-    }).join('');
-    return `
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="url(#steel_${uid})" stroke="#2a2a2a" stroke-width="1"/>
-      ${holes}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.48}" fill="url(#chrome_${uid})" stroke="#303030" stroke-width="1.2"/>
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.38}" fill="none" stroke="#b8b8b8" stroke-width="0.7" opacity="0.75"/>
-      ${bolts}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.17}" fill="#d0d0d0" stroke="#2a2a2a" stroke-width="0.9"/>
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.06}" fill="#fafafa"/>
-    `;
-  }
+  const bolts = [0, 72, 144, 216, 288].map(deg => {
+    const a = (deg - 90) * Math.PI / 180;
+    const bx = cx + Math.cos(a) * boltDist, by = cy + Math.sin(a) * boltDist;
+    return '<circle cx="' + bx + '" cy="' + by + '" r="' + boltR + '" fill="#2a2a2a"/><circle cx="' + bx + '" cy="' + (by - 0.4) + '" r="' + (boltR * 0.6) + '" fill="#a8a8a8"/>';
+  }).join('');
+  const brakeDisc = '<circle cx="' + cx + '" cy="' + cy + '" r="' + discR + '" fill="url(#brake_' + uid + ')" stroke="#1a1a1a" stroke-width="0.8"/>';
+  const caliper = '<rect x="' + (cx - R * 0.12) + '" y="' + (cy - discR - R * 0.02) + '" width="' + (R * 0.24) + '" height="' + (R * 0.14) + '" rx="2" fill="#c0392b" stroke="#7c1f0a" stroke-width="0.8"/>';
+  let spokes = '';
   if (kind === 'torus') {
-    const spokes = Array.from({length: 5}).map((_, i) => {
+    spokes = Array.from({length: 5}).map((_, i) => {
       const a = (i * 72 - 90) * Math.PI / 180;
-      const x1 = cx + Math.cos(a) * R * 0.22;
-      const y1 = cy + Math.sin(a) * R * 0.22;
-      const x2 = cx + Math.cos(a) * R * 0.70;
-      const y2 = cy + Math.sin(a) * R * 0.70;
-      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#b0b0b0" stroke-width="${R * 0.30}" stroke-linecap="round"/>
-              <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#d8d8d8" stroke-width="${R * 0.14}" stroke-linecap="round"/>`;
+      return '<line x1="' + (cx + Math.cos(a) * hubR) + '" y1="' + (cy + Math.sin(a) * hubR) + '" x2="' + (cx + Math.cos(a) * rimR) + '" y2="' + (cy + Math.sin(a) * rimR) + '" stroke="url(#spoke_' + uid + ')" stroke-width="' + (R * 0.24) + '" stroke-linecap="round"/>';
     }).join('');
-    return `
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.74}" fill="#262626" stroke="#2a2a2a" stroke-width="1.2"/>
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="url(#steel_${uid})" stroke="#1a1a1a" stroke-width="1.2"/>
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="none" stroke="#e0e0e0" stroke-width="0.7" opacity="0.7"/>
-      ${spokes}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.26}" fill="url(#chrome_${uid})" stroke="#202020" stroke-width="1"/>
-      ${bolts}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.10}" fill="#f4f4f4"/>
-    `;
+  } else if (kind === 'alloy') {
+    spokes = Array.from({length: 10}).map((_, i) => {
+      const a = (i * 36 - 90) * Math.PI / 180;
+      return '<line x1="' + (cx + Math.cos(a) * hubR) + '" y1="' + (cy + Math.sin(a) * hubR) + '" x2="' + (cx + Math.cos(a) * rimR) + '" y2="' + (cy + Math.sin(a) * rimR) + '" stroke="url(#spoke_' + uid + ')" stroke-width="' + (R * 0.09) + '" stroke-linecap="round"/>';
+    }).join('');
+  } else {
+    spokes = [45, 135, 225, 315].map(deg => {
+      const a = deg * Math.PI / 180;
+      return '<circle cx="' + (cx + Math.cos(a) * R * 0.4) + '" cy="' + (cy + Math.sin(a) * R * 0.4) + '" r="' + (R * 0.08) + '" fill="#0a0a0a"/>';
+    }).join('');
   }
-  const spokes = Array.from({length: 10}).map((_, i) => {
-    const a = (i * 36 - 90) * Math.PI / 180;
-    const x1 = cx + Math.cos(a) * R * 0.24;
-    const y1 = cy + Math.sin(a) * R * 0.24;
-    const x2 = cx + Math.cos(a) * R * 0.74;
-    const y2 = cy + Math.sin(a) * R * 0.74;
-    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#909090" stroke-width="${R * 0.10}" stroke-linecap="round"/>
-            <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c8c8c8" stroke-width="${R * 0.045}" stroke-linecap="round"/>`;
-  }).join('');
-  return `
-    <circle cx="${cx}" cy="${cy}" r="${R * 0.74}" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="1.2"/>
-    <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="url(#steel_${uid})" stroke="#1a1a1a" stroke-width="1.2"/>
-    <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="none" stroke="#d0d0d0" stroke-width="0.6" opacity="0.65"/>
-    ${spokes}
-    <circle cx="${cx}" cy="${cy}" r="${R * 0.24}" fill="url(#chrome_${uid})" stroke="#1a1a1a" stroke-width="1"/>
-    ${bolts}
-    <circle cx="${cx}" cy="${cy}" r="${R * 0.10}" fill="#f8f8f8"/>
-  `;
+  const rimRing = '<circle cx="' + cx + '" cy="' + cy + '" r="' + rimR + '" fill="none" stroke="url(#chrome_' + uid + ')" stroke-width="' + (R * 0.06) + '"/>';
+  const hub = '<circle cx="' + cx + '" cy="' + cy + '" r="' + hubR + '" fill="url(#chrome_' + uid + ')" stroke="#1a1a1a" stroke-width="0.8"/>';
+  const cap = '<circle cx="' + cx + '" cy="' + cy + '" r="' + (R * 0.09) + '" fill="#e8e8e8"/>';
+  return tread + brakeDisc + spokes + rimRing + hub + bolts + caliper + cap;
 }
 
 function wheelPreviewSVG(kind) {
-  const cx = 24, cy = 24, R = 21;
-  const bolts = Array.from({length: 5}).map((_, i) => {
-    const a = (i * 72 - 90) * Math.PI / 180;
-    return `<circle cx="${cx + Math.cos(a) * R * 0.30}" cy="${cy + Math.sin(a) * R * 0.30}" r="${R * 0.05}" fill="#2a2a2a"/>`;
-  }).join('');
-  let inner = '';
-  if (kind === 'steel') {
-    const holes = [45, 135, 225, 315].map(a => {
-      const rad = a * Math.PI / 180;
-      return `<circle cx="${cx + Math.cos(rad) * R * 0.44}" cy="${cy + Math.sin(rad) * R * 0.44}" r="${R * 0.09}" fill="#0a0a0a"/>`;
-    }).join('');
-    inner = `
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="#c8c8c8" stroke="#2a2a2a" stroke-width="0.8"/>
-      ${holes}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.48}" fill="#e0e0e0" stroke="#303030" stroke-width="0.8"/>
-      ${bolts}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.16}" fill="#d8d8d8" stroke="#2a2a2a" stroke-width="0.6"/>
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.06}" fill="#fafafa"/>
-    `;
-  } else if (kind === 'torus') {
-    const spokes = Array.from({length: 5}).map((_, i) => {
-      const a = (i * 72 - 90) * Math.PI / 180;
-      return `<line x1="${cx + Math.cos(a) * R * 0.22}" y1="${cy + Math.sin(a) * R * 0.22}"
-                   x2="${cx + Math.cos(a) * R * 0.7}" y2="${cy + Math.sin(a) * R * 0.7}"
-                   stroke="#b8b8b8" stroke-width="${R * 0.3}" stroke-linecap="round"/>`;
-    }).join('');
-    inner = `
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="#c0c0c0" stroke="#1a1a1a" stroke-width="0.8"/>
-      ${spokes}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.26}" fill="#e8e8e8" stroke="#202020" stroke-width="0.8"/>
-      ${bolts}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.1}" fill="#f4f4f4"/>
-    `;
-  } else {
-    const spokes = Array.from({length: 10}).map((_, i) => {
-      const a = (i * 36 - 90) * Math.PI / 180;
-      return `<line x1="${cx + Math.cos(a) * R * 0.24}" y1="${cy + Math.sin(a) * R * 0.24}"
-                   x2="${cx + Math.cos(a) * R * 0.74}" y2="${cy + Math.sin(a) * R * 0.74}"
-                   stroke="#a8a8a8" stroke-width="${R * 0.1}" stroke-linecap="round"/>`;
-    }).join('');
-    inner = `
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.72}" fill="#b8b8b8" stroke="#1a1a1a" stroke-width="0.8"/>
-      ${spokes}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.24}" fill="#e8e8e8" stroke="#1a1a1a" stroke-width="0.8"/>
-      ${bolts}
-      <circle cx="${cx}" cy="${cy}" r="${R * 0.1}" fill="#f8f8f8"/>
-    `;
-  }
-  return `
-    <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="${cx}" cy="${cy}" r="${R}" fill="#1a1a1a"/>
-      ${inner}
-    </svg>
-  `;
+  if (kind === 'steel') return '<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="#1a1a1a"/><circle cx="30" cy="30" r="19" fill="#b8b8b8"/><circle cx="30" cy="30" r="12" fill="#d0d0d0"/></svg>';
+  if (kind === 'torus') return '<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="#1a1a1a"/><circle cx="30" cy="30" r="20" fill="#c8c8c8"/><circle cx="30" cy="30" r="7" fill="#e8e8e8"/></svg>';
+  return '<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="#1a1a1a"/><circle cx="30" cy="30" r="20" fill="#d0d0d0"/><circle cx="30" cy="30" r="6" fill="#e8e8e8"/></svg>';
 }
 
 function carSVG(carId) {
-  const car = getCar(carId);
-  if (!car) return '';
+  const car = getCar(carId); if (!car) return '';
   const cs = carState(carId);
-  const shape = SHAPES[car.shape];
+  const shape = SHAPES[car.shape]; if (!shape) return '';
   const wheelKind = cs.wheels || 'steel';
-
   const bodyColor = cs.color || car.color;
-  const isTinted  = cs.tint;
-  const isLowered = cs.lowering;
-  const glassTop  = isTinted ? '#1a2028' : '#f8fbff';
-  const glassMid  = isTinted ? '#0d1419' : '#b8d4ea';
-  const glassBot  = isTinted ? '#030608' : '#5e89a8';
+  const isTinted = cs.tint, isLowered = cs.lowering;
+  const bodyHi = lighten(bodyColor, 95);
+  const bodyMid = bodyColor;
+  const bodyDark = darken(bodyColor, 32);
+  const bodyLo = darken(bodyColor, 58);
+  const glassSky = isTinted ? '#0a0f14' : '#cfe6f7';
+  const glassDeep = isTinted ? '#000' : '#2a3d4a';
   const uid = 'c_' + carId;
-  const bodyHi     = lighten(bodyColor, 95);
-  const bodyLight  = lighten(bodyColor, 55);
-  const bodyMid    = bodyColor;
-  const bodyDark   = darken(bodyColor, 35);
-  const bodyLo     = darken(bodyColor, 60);
-  const bodyShadow = darken(bodyColor, 80);
-
-  const bodyOffset = isLowered ? 14 : 0;
-
-  const wheelShadowSvg = shape.wheels.map(([cx, cy]) =>
-    `<ellipse cx="${cx}" cy="157" rx="${shape.wheelR * 1.2}" ry="4" fill="rgba(0,0,0,.75)"/>`
-  ).join('');
-
+  const bodyOffset = isLowered ? 13 : 0;
   const wheelSvg = shape.wheels.map(([cx, cy]) => {
     const R = shape.wheelR;
-    return `
-      <g class="wheel" data-cx="${cx}" data-cy="${cy}">
-        <circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#tire_${uid})"/>
-        <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#000" stroke-width="1.4"/>
-        <circle cx="${cx}" cy="${cy}" r="${R * 0.9}" fill="none" stroke="#0a0a0a" stroke-width="0.8" opacity="0.7"/>
-        <circle cx="${cx}" cy="${cy}" r="${R * 0.88}" fill="none" stroke="#333" stroke-width="0.5" opacity="0.6" stroke-dasharray="2 2"/>
-        ${wheelInner(cx, cy, R, wheelKind, uid, cs)}
-      </g>
-    `;
+    return '<g class="wheel" data-cx="' + cx + '" data-cy="' + cy + '">' +
+      '<ellipse cx="' + cx + '" cy="' + (cy + R + 2) + '" rx="' + (R * 1.15) + '" ry="3.5" fill="rgba(0,0,0,.9)"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="url(#tire_' + uid + ')"/>' +
+      '<g class="wheel-rotor">' + wheelInner(cx, cy, R, wheelKind, uid) + '</g>' +
+    '</g>';
   }).join('');
-
-  const wellsSvg = shape.wheels.map(([cx, cy]) =>
-    `<circle cx="${cx}" cy="${cy}" r="${shape.wheelWellR}" fill="#050505"/>`
-  ).join('');
-
+  const wellsSvg = shape.wheels.map(([cx, cy]) => '<circle cx="' + cx + '" cy="' + cy + '" r="' + shape.wheelWellR + '" fill="#070707"/>').join('');
   const rustSvg = generateRust(shape, cs.rust);
-
-  const glassSvg = `
-    <path d="${shape.glass}" fill="url(#glass_${uid})" stroke="#0a0a0a" stroke-width="2.8" stroke-linejoin="round"/>
-    <path d="${shape.glass}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="0.9" transform="translate(0,-1.4)"/>
-    <g clip-path="url(#glassClip_${uid})">
-      <path d="M 0,26 L 70,0 L 100,0 L 26,70 Z" fill="rgba(255,255,255,.35)"/>
-      <path d="M 26,26 L 100,0 L 116,0 L 44,76 Z" fill="rgba(255,255,255,.2)"/>
-      <path d="M 50,20 L 100,0 L 106,0 L 56,26 Z" fill="rgba(255,255,255,.4)"/>
-    </g>
-    ${shape.pillars.map(p => `<line x1="${p.x1}" y1="${p.y1}" x2="${p.x2}" y2="${p.y2}" stroke="#0a0a0a" stroke-width="${p.w}"/>`).join('')}
-  `;
-
-  function bumper(b) {
-    if (!b) return '';
-    const midY = b.y + b.h / 2 - 1.5;
-    return `
-      <rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="2.5" fill="url(#chrome_${uid})" stroke="#080808" stroke-width="1.4"/>
-      <rect x="${b.x + 2}" y="${b.y + 1.5}" width="${b.w - 4}" height="1.8" fill="#ffffff" opacity="0.9"/>
-      <rect x="${b.x + 2}" y="${b.y + 3}" width="${b.w - 4}" height="0.6" fill="#888" opacity="0.5"/>
-      <rect x="${b.x + 2}" y="${midY}" width="${b.w - 4}" height="3" fill="#0a0a0a" opacity="0.9"/>
-      <rect x="${b.x + 2}" y="${b.y + b.h - 2}" width="${b.w - 4}" height="1.2" fill="#000" opacity="0.55"/>
-    `;
-  }
-
-  const headlightSvg = shape.headlight ? `
-    <g id="hl-${uid}">
-      <circle cx="${shape.headlight.cx}" cy="${shape.headlight.cy}" r="${shape.headlight.r + 2.5}" fill="url(#chrome_${uid})" stroke="#080808" stroke-width="1.3"/>
-      <circle cx="${shape.headlight.cx}" cy="${shape.headlight.cy}" r="${shape.headlight.r}" fill="#fef9c3" stroke="#080808" stroke-width="1.1"/>
-      <circle cx="${shape.headlight.cx}" cy="${shape.headlight.cy}" r="${shape.headlight.r * 0.78}" fill="#fde68a"/>
-      <circle cx="${shape.headlight.cx}" cy="${shape.headlight.cy}" r="${shape.headlight.r * 0.48}" fill="#fff8c5"/>
-      <circle cx="${shape.headlight.cx - shape.headlight.r * 0.30}" cy="${shape.headlight.cy - shape.headlight.r * 0.30}" r="${shape.headlight.r * 0.24}" fill="#ffffff" opacity="0.95"/>
-    </g>
-  ` : '';
-
-  const taillightSvg = shape.taillight ? `
-    <g id="tl-${uid}">
-      <rect x="${shape.taillight.x}" y="${shape.taillight.y}" width="${shape.taillight.w}" height="${shape.taillight.h}" rx="2" fill="#dc2626" stroke="#080808" stroke-width="1.3"/>
-      <rect x="${shape.taillight.x + 1}" y="${shape.taillight.y + 1}" width="${shape.taillight.w - 2}" height="${shape.taillight.h * 0.38}" rx="1.5" fill="#f87171" opacity="0.95"/>
-      <line x1="${shape.taillight.x + 1}" y1="${shape.taillight.y + shape.taillight.h * 0.5}" x2="${shape.taillight.x + shape.taillight.w - 1}" y2="${shape.taillight.y + shape.taillight.h * 0.5}" stroke="#080808" stroke-width="0.8"/>
-      <rect x="${shape.taillight.x + 1}" y="${shape.taillight.y + shape.taillight.h * 0.58}" width="${shape.taillight.w - 2}" height="${shape.taillight.h * 0.36}" rx="1.5" fill="#991b1b" opacity="0.9"/>
-    </g>
-  ` : '';
-
-  const turnSignalSvg = shape.turnSignal ? `
-    <rect x="${shape.turnSignal.x}" y="${shape.turnSignal.y}" width="${shape.turnSignal.w}" height="${shape.turnSignal.h}" rx="2" fill="#f59e0b" stroke="#080808" stroke-width="1"/>
-    <rect x="${shape.turnSignal.x + 1}" y="${shape.turnSignal.y + 1}" width="${shape.turnSignal.w - 2}" height="${(shape.turnSignal.h - 2) * 0.5}" rx="1" fill="#fbbf24" opacity="0.95"/>
-  ` : '';
-
-  const handles = shape.handles.map(([hx, hy]) =>
-    `<rect x="${hx}" y="${hy}" width="14" height="3.5" rx="1.5" fill="#0a0a0a" stroke="#000" stroke-width="0.5"/>
-     <rect x="${hx + 1}" y="${hy + 0.7}" width="12" height="1.2" rx="0.6" fill="#4a4a4a" opacity="0.7"/>`
-  ).join('');
-
-  const sideTrimSvg = shape.sideTrim ? `
-    <rect x="${shape.sideTrim.x}" y="${shape.sideTrim.y}" width="${shape.sideTrim.w}" height="${shape.sideTrim.h}" fill="url(#chrome_${uid})"/>
-    <rect x="${shape.sideTrim.x}" y="${shape.sideTrim.y}" width="${shape.sideTrim.w}" height="0.6" fill="#ffffff" opacity="0.8"/>
-    <rect x="${shape.sideTrim.x}" y="${shape.sideTrim.y + shape.sideTrim.h - 0.7}" width="${shape.sideTrim.w}" height="0.7" fill="#000" opacity="0.5"/>
-  ` : '';
-
-  const beltLineSvg = shape.beltLine ? `
-    <rect x="${shape.beltLine.x}" y="${shape.beltLine.y}" width="${shape.beltLine.w}" height="${shape.beltLine.h}" fill="url(#chrome_${uid})" opacity="0.95"/>
-    <rect x="${shape.beltLine.x}" y="${shape.beltLine.y}" width="${shape.beltLine.w}" height="0.5" fill="#ffffff" opacity="0.85"/>
-  ` : '';
-
-  const rubStripSvg = shape.rubStrip ? `
-    <rect x="${shape.rubStrip.x}" y="${shape.rubStrip.y}" width="${shape.rubStrip.w}" height="${shape.rubStrip.h}" fill="#0a0a0a" opacity="0.85"/>
-  ` : '';
-
-  const hoodLineSvg = shape.hoodLine ? `
-    <path d="${shape.hoodLine}" stroke="#0a0a0a" stroke-width="1.2" fill="none" opacity="0.55"/>
-    <path d="${shape.hoodLine}" stroke="rgba(255,255,255,.28)" stroke-width="0.7" fill="none" transform="translate(0,-1)"/>
-  ` : '';
-  const trunkLineSvg = shape.trunkLine ? `
-    <path d="${shape.trunkLine}" stroke="#0a0a0a" stroke-width="1.2" fill="none" opacity="0.55"/>
-    <path d="${shape.trunkLine}" stroke="rgba(255,255,255,.28)" stroke-width="0.7" fill="none" transform="translate(0,-1)"/>
-  ` : '';
-
-  const mirrorSvg = shape.mirror ? `
-    <ellipse cx="${shape.mirror.x}" cy="${shape.mirror.y}" rx="${shape.mirror.w / 2}" ry="${shape.mirror.h / 2}" fill="#161616" stroke="#000" stroke-width="0.8"/>
-    <ellipse cx="${shape.mirror.x + 1}" cy="${shape.mirror.y - 1}" rx="${shape.mirror.w / 3}" ry="${shape.mirror.h / 3}" fill="#2a2a2a" opacity="0.55"/>
-  ` : '';
-
-  const rails = shape.roofRails ? shape.roofRails.map(([x1, x2, y]) => `
-    <line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
-  `).join('') : '';
-  const spoiler = shape.spoiler ? `
-    <rect x="${shape.spoiler.x}" y="${shape.spoiler.y}" width="${shape.spoiler.w}" height="${shape.spoiler.h}" rx="2" fill="#161616" stroke="#000" stroke-width="1"/>
-    <rect x="${shape.spoiler.x}" y="${shape.spoiler.y}" width="${shape.spoiler.w}" height="1.4" fill="#444" opacity="0.6"/>
-  ` : '';
-
-  return `
-    <svg viewBox="0 0 400 168" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        <linearGradient id="body_${uid}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0"    stop-color="${bodyHi}"/>
-          <stop offset="0.06" stop-color="${bodyLight}"/>
-          <stop offset="0.32" stop-color="${bodyMid}"/>
-          <stop offset="0.6"  stop-color="${bodyDark}"/>
-          <stop offset="0.85" stop-color="${bodyLo}"/>
-          <stop offset="1"    stop-color="${bodyShadow}"/>
-        </linearGradient>
-        <linearGradient id="glass_${uid}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0"    stop-color="${glassTop}"/>
-          <stop offset="0.55" stop-color="${glassMid}"/>
-          <stop offset="1"    stop-color="${glassBot}"/>
-        </linearGradient>
-        <radialGradient id="tire_${uid}" cx="0.5" cy="0.4" r="0.75">
-          <stop offset="0.65" stop-color="#222"/>
-          <stop offset="1"    stop-color="#020202"/>
-        </radialGradient>
-        <linearGradient id="chrome_${uid}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0"    stop-color="#ffffff"/>
-          <stop offset="0.3"  stop-color="#ececec"/>
-          <stop offset="0.5"  stop-color="#b8b8b8"/>
-          <stop offset="0.7"  stop-color="#8a8a8a"/>
-          <stop offset="1"    stop-color="#555"/>
-        </linearGradient>
-        <radialGradient id="steel_${uid}" cx="0.4" cy="0.35" r="0.7">
-          <stop offset="0.5" stop-color="#e0e0e0"/>
-          <stop offset="1"   stop-color="#727272"/>
-        </radialGradient>
-        <clipPath id="clip_${uid}"><path d="${shape.body}"/></clipPath>
-        <clipPath id="glassClip_${uid}"><path d="${shape.glass}"/></clipPath>
-      </defs>
-
-      ${wheelShadowSvg}
-      ${wellsSvg}
-      ${wheelSvg}
-
-      <g transform="translate(0, ${bodyOffset})">
-        <path d="${shape.body}" fill="url(#body_${uid})" stroke="#0a0a0a" stroke-width="2.2" stroke-linejoin="round"/>
-        <path d="${shape.body}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.3" transform="translate(0,1.5)"/>
-        <path d="${shape.body}" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="0.9" transform="translate(0,3)"/>
-        <path d="${shape.body}" fill="none" stroke="rgba(0,0,0,.6)" stroke-width="1.4" transform="translate(0,-1.6)"/>
-
-        ${hoodLineSvg}
-        ${trunkLineSvg}
-
-        <g clip-path="url(#clip_${uid})">${rustSvg}</g>
-        ${glassSvg}
-        ${shape.doorLines.map(d => `<path d="${d}" stroke="#0a0a0a" stroke-width="1.2" opacity="0.6" fill="none"/>`).join('')}
-        ${handles}
-        ${beltLineSvg}
-        ${sideTrimSvg}
-        ${rubStripSvg}
-        ${mirrorSvg}
-        ${headlightSvg}
-        ${turnSignalSvg}
-        ${taillightSvg}
-        ${bumper(shape.bumperF)}
-        ${bumper(shape.bumperR)}
-        ${rails}
-        ${spoiler}
-      </g>
-    </svg>
-  `;
+  let headlightSvg = '';
+  const hl = shape.headlight;
+  if (hl) headlightSvg = '<rect x="' + (hl.x - 2) + '" y="' + (hl.y - 2) + '" width="' + (hl.w + 4) + '" height="' + (hl.h + 4) + '" rx="3" fill="#c0c0c0"/><rect x="' + hl.x + '" y="' + hl.y + '" width="' + hl.w + '" height="' + hl.h + '" rx="2" fill="#fffbe8"/>';
+  const taillightSvg = shape.taillight ? '<rect x="' + shape.taillight.x + '" y="' + shape.taillight.y + '" width="' + shape.taillight.w + '" height="' + shape.taillight.h + '" rx="2" fill="#dc2626"/>' : '';
+  const handles = (shape.handles || []).map(([hx, hy]) => '<rect x="' + hx + '" y="' + hy + '" width="14" height="3.5" rx="1.5" fill="#0a0a0a"/>').join('');
+  const mirrorSvg = shape.mirror ? '<ellipse cx="' + shape.mirror.x + '" cy="' + shape.mirror.y + '" rx="' + (shape.mirror.w / 2) + '" ry="' + (shape.mirror.h / 2) + '" fill="#1a1a1a"/>' : '';
+  function bumper(b) { return b ? '<rect x="' + b.x + '" y="' + b.y + '" width="' + b.w + '" height="' + b.h + '" rx="3" fill="#c0c0c0"/>' : ''; }
+  const glassSvg = '<path d="' + shape.glass + '" fill="url(#glass_' + uid + ')" stroke="#0a0a0a" stroke-width="3" stroke-linejoin="round"/>';
+  return '<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">' +
+    '<defs>' +
+      '<linearGradient id="body_' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + bodyHi + '"/><stop offset="0.44" stop-color="' + bodyMid + '"/><stop offset="0.72" stop-color="' + bodyDark + '"/><stop offset="1" stop-color="' + bodyLo + '"/></linearGradient>' +
+      '<linearGradient id="glass_' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + glassSky + '"/><stop offset="1" stop-color="' + glassDeep + '"/></linearGradient>' +
+      '<radialGradient id="tire_' + uid + '"><stop offset="0.55" stop-color="#242424"/><stop offset="1" stop-color="#000"/></radialGradient>' +
+      '<radialGradient id="brake_' + uid + '"><stop offset="0.5" stop-color="#4a4a4a"/><stop offset="0.8" stop-color="#2a2a2a"/><stop offset="1" stop-color="#1a1a1a"/></radialGradient>' +
+      '<linearGradient id="chrome_' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="0.5" stop-color="#c0c0c0"/><stop offset="1" stop-color="#5a5a5a"/></linearGradient>' +
+      '<linearGradient id="spoke_' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0f0f0"/><stop offset="0.5" stop-color="#a8a8a8"/><stop offset="1" stop-color="#5a5a5a"/></linearGradient>' +
+      '<clipPath id="clip_' + uid + '"><path d="' + shape.body + '"/></clipPath>' +
+    '</defs>' +
+    '<ellipse cx="200" cy="180" rx="196" ry="7" fill="rgba(0,0,0,.55)"/>' +
+    wellsSvg + wheelSvg +
+    '<g transform="translate(0,' + bodyOffset + ')">' +
+      '<path d="' + shape.body + '" fill="url(#body_' + uid + ')" stroke="#050505" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<g clip-path="url(#clip_' + uid + ')">' + rustSvg + '</g>' +
+      glassSvg +
+      (shape.doorLines || []).map(d => '<path d="' + d + '" stroke="#050505" stroke-width="1.2" opacity="0.7" fill="none"/>').join('') +
+      handles + mirrorSvg + headlightSvg + taillightSvg +
+      bumper(shape.bumperF) + bumper(shape.bumperR) +
+    '</g>' +
+  '</svg>';
 }
 
-const moneyEl     = document.getElementById('moneyEl');
-const perClickEl  = document.getElementById('perClickEl');
-const perSecEl    = document.getElementById('perSecEl');
-const stageEl     = document.getElementById('stage');
-const emptyState  = document.getElementById('emptyState');
-const carWrap     = document.getElementById('carWrap');
-const carName     = document.getElementById('carName');
-const carTag      = document.getElementById('carTag');
-const carPassive  = document.getElementById('carPassive');
-const carSvgEl    = document.getElementById('carSvg');
-const rustFill    = document.getElementById('rustFill');
-const rustVal     = document.getElementById('rustVal');
-const hintEl      = document.getElementById('hint');
+function carVisual(carId) { return '<div class="car-fallback">' + carSVG(carId) + '</div>'; }
+
+const moneyEl = document.getElementById('moneyEl');
+const perClickEl = document.getElementById('perClickEl');
+const perSecEl = document.getElementById('perSecEl');
+const stageEl = document.getElementById('stage');
+const emptyState = document.getElementById('emptyState');
+const carWrap = document.getElementById('carWrap');
+const carName = document.getElementById('carName');
+const carTag = document.getElementById('carTag');
+const carPassive = document.getElementById('carPassive');
+const carSvgEl = document.getElementById('carSvg');
+const rustFill = document.getElementById('rustFill');
+const rustVal = document.getElementById('rustVal');
+const hintEl = document.getElementById('hint');
 
 function render() {
   moneyEl.textContent = formatMoney(state.money);
   const boosted = boostActive();
   perSecEl.textContent = formatRate(totalPassive()) + ' ₽';
-  perSecEl.className = 'sec' + (boosted ? ' boosted' : '');
-
+  perClickEl.textContent = state.currentCar ? formatMoney(clickIncome(state.currentCar)) + ' ₽' : '0 ₽';
   if (state.currentCar && getCar(state.currentCar)) {
     const car = getCar(state.currentCar);
     const cs = carState(state.currentCar);
     const inc = clickIncome(state.currentCar);
     const pass = passiveOf(state.currentCar);
-
     stageEl.classList.remove('empty');
     emptyState.style.display = 'none';
     carWrap.style.display = 'block';
     hintEl.style.display = 'block';
-
     const bpanBadge = cs.lowering ? '<span class="bpan-badge">БПАН</span>' : '';
-    carName.innerHTML = `${car.name} (${car.year})${bpanBadge}`;
+    carName.innerHTML = car.name + ' (' + car.year + ')' + bpanBadge;
     carTag.textContent = car.tag || '';
-    const boostBadge = boosted ? ' <span class="boost-mark">🔥 +50%</span>' : '';
-    carPassive.innerHTML = `+${formatRate(pass)} ₽/сек · <span class="click-part">+${formatRate(inc)} ₽/тап</span>${boostBadge}`;
-    carSvgEl.innerHTML = carSVG(state.currentCar);
-
+    const boostBadge = boosted ? ' <span style="color:#fb923c">🔥 +50%</span>' : '';
+    carPassive.innerHTML = '+' + formatRate(pass) + ' ₽/сек · <span class="click-part">+' + formatRate(inc) + ' ₽/тап</span>' + boostBadge;
+    carSvgEl.innerHTML = carVisual(state.currentCar);
     rustFill.style.width = cs.rust + '%';
     rustVal.textContent = Math.round(cs.rust) + '%';
-    perClickEl.textContent = formatMoney(inc) + ' ₽';
-    perClickEl.className = boosted ? 'boosted' : '';
   } else {
     stageEl.classList.add('empty');
     emptyState.style.display = 'block';
     carWrap.style.display = 'none';
     hintEl.style.display = 'none';
-    perClickEl.textContent = '0 ₽';
-    perClickEl.className = '';
   }
+  updateCollection();
+  updateTopBadges();
 }
-
-function flashLights() {
-  if (!state.currentCar) return;
-  const car = getCar(state.currentCar);
-  if (!car) return;
-  const shape = SHAPES[car.shape];
-  const svg = carSvgEl.querySelector('svg');
-  if (!svg) return;
-
-  if (shape.headlight) {
-    const hl = shape.headlight;
-
-    const flash = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    flash.setAttribute('cx', hl.cx);
-    flash.setAttribute('cy', hl.cy);
-    flash.setAttribute('r', hl.r);
-    flash.setAttribute('fill', '#ffffff');
-    flash.style.pointerEvents = 'none';
-    svg.appendChild(flash);
-    flash.animate([
-      { opacity: 0,    transform: 'scale(0.6)' },
-      { opacity: 0.95, transform: 'scale(1.15)', offset: 0.15 },
-      { opacity: 0.5,  transform: 'scale(1)',     offset: 0.5 },
-      { opacity: 0,    transform: 'scale(1.4)' }
-    ], { duration: 340, easing: 'ease-out', fill: 'forwards' }).onfinish = () => flash.remove();
-
-    const cone = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    const cx = hl.cx, cy = hl.cy, rr = hl.r;
-    cone.setAttribute('points',
-      `${cx},${cy - rr * 0.7} ${cx},${cy + rr * 0.7} ${cx - 110},${cy + rr * 2.4} ${cx - 110},${cy - rr * 2.4}`
-    );
-    cone.setAttribute('fill', '#fde68a');
-    cone.style.filter = 'blur(3px)';
-    cone.style.pointerEvents = 'none';
-    svg.appendChild(cone);
-    cone.animate([
-      { opacity: 0,    transform: 'scaleX(0.2)' },
-      { opacity: 0.65, transform: 'scaleX(1)',   offset: 0.25 },
-      { opacity: 0.35, transform: 'scaleX(1.15)', offset: 0.6 },
-      { opacity: 0,    transform: 'scaleX(1.4)' }
-    ], { duration: 520, easing: 'ease-out', fill: 'forwards' }).onfinish = () => cone.remove();
-
-    const beam = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-    beam.setAttribute('cx', hl.cx);
-    beam.setAttribute('cy', hl.cy);
-    beam.setAttribute('rx', 16);
-    beam.setAttribute('ry', 16);
-    beam.setAttribute('fill', '#fff9b8');
-    beam.style.filter = 'blur(6px)';
-    beam.style.pointerEvents = 'none';
-    svg.appendChild(beam);
-    beam.animate([
-      { transform: 'translate(0,0) scale(0.4)', opacity: 0.95 },
-      { transform: 'translate(-45px,0) scale(2.2)', opacity: 0 }
-    ], { duration: 500, easing: 'cubic-bezier(.2,.8,.4,1)', fill: 'forwards' }).onfinish = () => beam.remove();
-  }
-
-  if (shape.taillight) {
-    const tl = shape.taillight;
-    const tcx = tl.x + tl.w / 2;
-    const tcy = tl.y + tl.h / 2;
-
-    const flash = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    flash.setAttribute('x', tl.x);
-    flash.setAttribute('y', tl.y);
-    flash.setAttribute('width', tl.w);
-    flash.setAttribute('height', tl.h);
-    flash.setAttribute('rx', 2);
-    flash.setAttribute('fill', '#ff4d4d');
-    flash.style.pointerEvents = 'none';
-    svg.appendChild(flash);
-    flash.animate([
-      { opacity: 0 },
-      { opacity: 0.9, offset: 0.15 },
-      { opacity: 0.4, offset: 0.55 },
-      { opacity: 0 }
-    ], { duration: 340, easing: 'ease-out', fill: 'forwards' }).onfinish = () => flash.remove();
-
-    const cone = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    cone.setAttribute('points',
-      `${tcx},${tcy - tl.h * 0.4} ${tcx},${tcy + tl.h * 0.4} ${tcx + 70},${tcy + tl.h * 1.3} ${tcx + 70},${tcy - tl.h * 1.3}`
-    );
-    cone.setAttribute('fill', '#dc2626');
-    cone.style.filter = 'blur(3px)';
-    cone.style.pointerEvents = 'none';
-    svg.appendChild(cone);
-    cone.animate([
-      { opacity: 0,    transform: 'scaleX(0.2)' },
-      { opacity: 0.55, transform: 'scaleX(1)',   offset: 0.25 },
-      { opacity: 0.3,  transform: 'scaleX(1.15)', offset: 0.6 },
-      { opacity: 0,    transform: 'scaleX(1.4)' }
-    ], { duration: 500, easing: 'ease-out', fill: 'forwards' }).onfinish = () => cone.remove();
-
-    const beam = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-    beam.setAttribute('cx', tcx);
-    beam.setAttribute('cy', tcy);
-    beam.setAttribute('rx', 12);
-    beam.setAttribute('ry', 12);
-    beam.setAttribute('fill', '#f87171');
-    beam.style.filter = 'blur(5px)';
-    beam.style.pointerEvents = 'none';
-    svg.appendChild(beam);
-    beam.animate([
-      { transform: 'translate(0,0) scale(0.4)', opacity: 0.9 },
-      { transform: 'translate(26px,0) scale(1.9)', opacity: 0 }
-    ], { duration: 460, easing: 'cubic-bezier(.2,.8,.4,1)', fill: 'forwards' }).onfinish = () => beam.remove();
-  }
+function updateCollection() {
+  const owned = Object.keys(state.cars).filter(id => getCar(id)).length;
+  const total = CARS.length;
+  const pct = Math.round(owned / total * 100);
+  document.getElementById('collFill').style.width = pct + '%';
+  document.getElementById('collText').textContent = owned + ' / ' + total;
 }
-
-function spinWheels() {
-  const svg = carSvgEl.querySelector('svg');
-  if (!svg) return;
-  svg.querySelectorAll('.wheel').forEach(w => {
-    if (w._spin) { try { w._spin.cancel(); } catch (e) {} }
-    const cx = parseFloat(w.dataset.cx);
-    const cy = parseFloat(w.dataset.cy);
-    w.style.transformBox = 'view-box';
-    w.style.transformOrigin = cx + 'px ' + cy + 'px';
-    w._spin = w.animate(
-      [
-        { transform: 'rotate(0deg)' },
-        { transform: 'rotate(360deg)' }
-      ],
-      { duration: 480, easing: 'cubic-bezier(.25,.6,.35,1)' }
-    );
-  });
+function updateTopBadges() {
+  const badge = document.getElementById('questBadge');
+  if (!badge || !state.quests.list) return;
+  const hasReady = state.quests.list.some(q => q.done && !q.claimed);
+  badge.style.display = hasReady ? 'inline-block' : 'none';
 }
 
 let lastClickTime = 0;
-function handleClick(x, y, mult = 1, floatStyle = '') {
+function handleClick(x, y, mult) {
+  mult = mult || 1;
   if (!state.currentCar) return;
   const now = Date.now();
   const minDelay = mult >= 8 ? 100 : 60;
   if (now - lastClickTime < minDelay) return;
   lastClickTime = now;
-
   const inc = clickIncome(state.currentCar);
   const gain = Math.max(1, Math.round(inc * mult));
   state.money += gain;
-
-  flashLights();
-  spinWheels();
-  showFloat(x, y, '+' + formatMoney(gain) + ' ₽', mult, floatStyle);
-  moneyEl.textContent = formatMoney(state.money);
+  state.stats.totalEarned += gain;
+  state.stats.totalClicks += 1;
+  updateQuestProgress('clicks', 1);
+  updateQuestProgress('earn', gain);
+  spinWheelsRight();
+  showFloat(x, y, '+' + formatMoney(gain) + ' ₽', mult);
+  render();
+  checkAchievements();
   saveState();
 }
-function showFloat(x, y, text, mult, extraClass) {
+function spinWheelsRight() {
+  const svg = carSvgEl.querySelector('svg');
+  if (!svg) return;
+  const wheels = svg.querySelectorAll('.wheel');
+  wheels.forEach(w => {
+    if (!w.dataset.cx || !w.dataset.cy) return;
+    const cx = parseFloat(w.dataset.cx);
+    const cy = parseFloat(w.dataset.cy);
+    const rotor = w.querySelector('.wheel-rotor') || w;
+    rotor.style.transformBox = 'view-box';
+    rotor.style.transformOrigin = cx + 'px ' + cy + 'px';
+    const anim = rotor.animate(
+      [{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
+      { duration: 420, easing: 'cubic-bezier(.4,0,.6,1)', iterations: 1, composite: 'replace' }
+    );
+    if (w._spin) { try { w._spin.cancel(); } catch (e) {} }
+    w._spin = anim;
+  });
+}
+function showFloat(x, y, text, mult) {
   const el = document.createElement('div');
   let cls = 'float-money';
-  if (mult >= 8) cls += ' space';
-  else if (mult >= 5) cls += ' big';
-  if (extraClass) cls += ' ' + extraClass;
-  el.className = cls;
-  el.textContent = text;
+  if (mult >= 8) cls += ' space'; else if (mult >= 5) cls += ' big';
+  el.className = cls; el.textContent = text;
   el.style.left = x + 'px'; el.style.top = y + 'px';
   document.body.appendChild(el);
   const dx = (Math.random() - 0.5) * 40;
   el.animate([
     { transform: 'translate(-50%, 0) scale(1)', opacity: 1 },
-    { transform: `translate(calc(-50% + ${dx}px), -100px) scale(${mult >= 8 ? 1.3 : mult >= 5 ? 1.15 : 1})`, opacity: 0 }
-  ], { duration: mult >= 8 ? 1100 : 900, easing: 'cubic-bezier(.2,.8,.4,1)' }).onfinish = () => el.remove();
+    { transform: 'translate(calc(-50% + ' + dx + 'px), -100px) scale(' + (mult >= 8 ? 1.3 : mult >= 5 ? 1.15 : 1) + ')', opacity: 0 }
+  ], { duration: mult >= 8 ? 1100 : 900 }).onfinish = () => el.remove();
 }
-
 stageEl.addEventListener('mousedown', (e) => {
-  if (e.button === 0 || e.button === 2) {
-    e.preventDefault();
-    const mult = e.button === 2 ? 5 : 1;
-    handleClick(e.clientX, e.clientY, mult);
-  }
+  if (e.button === 0 || e.button === 2) { e.preventDefault(); handleClick(e.clientX, e.clientY, e.button === 2 ? 5 : 1); }
 });
 stageEl.addEventListener('contextmenu', (e) => e.preventDefault());
 stageEl.addEventListener('touchstart', (e) => {
-  if (!state.currentCar) return;
   if (e.touches.length === 1) handleClick(e.touches[0].clientX, e.touches[0].clientY, 1);
 }, { passive: true });
-
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     e.preventDefault();
-    if (!state.currentCar) return;
+    if (!state.currentCar || !gameScreen.classList.contains('show')) return;
     const rect = stageEl.getBoundingClientRect();
-    const x = rect.left + rect.width / 2 + (Math.random() - 0.5) * 60;
-    const y = rect.top + rect.height / 2 + (Math.random() - 0.5) * 40;
-    handleClick(x, y, SPACE_MULT, 'space');
+    handleClick(rect.left + rect.width / 2, rect.top + rect.height / 2, 8);
   }
 });
 
-setInterval(() => {
-  const inc = totalPassive() / 10;
-  if (inc > 0) { state.money += inc; moneyEl.textContent = formatMoney(state.money); }
-}, 100);
-setInterval(() => saveState(), 5000);
-window.addEventListener('beforeunload', () => saveState());
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveState(); });
-
-const boostBtn    = document.getElementById('boostBtn');
+const boostBtn = document.getElementById('boostBtn');
 const boostActiveEl = document.getElementById('boostActive');
-const boostTimerEl  = document.getElementById('boostTimer');
-
+const boostTimerEl = document.getElementById('boostTimer');
 function renderBoostUI() {
-  const active = boostActive();
-  if (active) {
+  if (boostActive()) {
     boostBtn.style.display = 'none';
     boostActiveEl.style.display = 'flex';
     const left = Math.max(0, state.boostUntil - Date.now());
-    const totalSec = Math.floor(left / 1000);
-    const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-    boostTimerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    const s = Math.floor(left / 1000);
+    boostTimerEl.textContent = Math.floor(s / 60) + ':' + (s % 60).toString().padStart(2, '0');
   } else {
     boostBtn.style.display = 'flex';
     boostActiveEl.style.display = 'none';
   }
 }
-setInterval(() => {
-  if (boostActive()) {
-    renderBoostUI();
-  } else if (state.boostUntil && state.boostUntil <= Date.now()) {
-    state.boostUntil = 0;
-    saveState();
-    renderBoostUI();
-    render();
-  }
-}, 1000);
-
-function startBoost(durationMs) {
-  const now = Date.now();
-  const base = (state.boostUntil && state.boostUntil > now) ? state.boostUntil : now;
-  state.boostUntil = base + durationMs;
-  saveState();
-  renderBoostUI();
-  render();
+setInterval(() => { if (boostActive()) renderBoostUI(); }, 1000);
+function startBoost(ms) {
+  state.boostUntil = Math.max(Date.now(), state.boostUntil || 0) + ms;
+  saveState(); renderBoostUI(); render();
 }
-
-async function watchAd() {
-  if (busyAd) return;
-  busyAd = true;
+boostBtn.addEventListener('click', async () => {
   boostBtn.disabled = true;
-  const subEl = boostBtn.querySelector('.boost-sub');
-  const prevText = subEl.textContent;
-  subEl.textContent = 'Загрузка рекламы...';
+  const sub = boostBtn.querySelector('.boost-sub');
+  const prev = sub.textContent;
+  sub.textContent = 'Загрузка...';
   try {
     if (window.vkBridge && typeof vkBridge.send === 'function') {
       const check = await vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'reward' });
-      if (!check.result) throw new Error('Реклама недоступна');
+      if (!check.result) throw new Error('no ads');
       const res = await vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'reward' });
-      if (!res.result) throw new Error('Реклама не досмотрена');
-      startBoost(BOOST_DURATION);
-      showToast('🔥 Авто-кликер +50% на 30 минут!', 'boost');
-    } else {
-      await new Promise(r => setTimeout(r, 600));
-      startBoost(BOOST_DURATION);
-      showToast('🔥 Авто-кликер +50% на 30 минут!', 'boost');
-    }
-  } catch (e) {
-    if (!window.vkBridge) {
-      startBoost(BOOST_DURATION);
-      showToast('🔥 Авто-кликер +50%!', 'boost');
-    } else {
-      showToast('Реклама недоступна, попробуй позже', 'err');
-    }
-  } finally {
-    busyAd = false;
-    boostBtn.disabled = false;
-    subEl.textContent = prevText;
-    renderBoostUI();
-  }
-}
-boostBtn.addEventListener('click', watchAd);
-
-const sheet = document.getElementById('sheet');
-const sheetContent = document.getElementById('sheetContent');
-let activeTab = null;
-document.querySelectorAll('.tabs button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.dataset.tab;
-    if (activeTab === tab) { closeSheet(); return; }
-    activeTab = tab;
-    document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b === btn));
-    openSheet(tab);
-  });
+      if (!res.result) throw new Error('not watched');
+    } else { await new Promise(r => setTimeout(r, 600)); }
+    startBoost(BOOST_DURATION);
+    showToast('🔥 Буст +50% на 30 минут!', 'boost');
+    updateQuestProgress('boost', 1);
+  } catch (e) { showToast('Реклама недоступна', 'err'); }
+  finally { boostBtn.disabled = false; sub.textContent = prev; }
 });
-sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); });
-function openSheet(tab) {
-  sheet.classList.add('show');
-  if (tab === 'garage') renderGarage();
-  if (tab === 'market') renderMarket();
-  if (tab === 'tuning') renderTuning();
+
+const chestBtn = document.getElementById('chestBtn');
+const chestTimer = document.getElementById('chestTimer');
+const chestSub = document.getElementById('chestSub');
+function renderChest() {
+  const last = state.chest.lastOpen || 0;
+  const left = CHEST_COOLDOWN - (Date.now() - last);
+  if (left <= 0) { chestBtn.disabled = false; chestTimer.textContent = 'Готов!'; chestSub.textContent = 'Открой бесплатно'; }
+  else { chestBtn.disabled = true; const s = Math.floor(left / 1000); chestTimer.textContent = Math.floor(s / 60) + ':' + (s % 60).toString().padStart(2, '0'); chestSub.textContent = 'Ждёт тебя'; }
 }
-function closeSheet() {
-  sheet.classList.remove('show');
-  activeTab = null;
-  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+setInterval(renderChest, 1000);
+chestBtn.addEventListener('click', () => {
+  const last = state.chest.lastOpen || 0;
+  if (Date.now() - last < CHEST_COOLDOWN) return;
+  state.chest.lastOpen = Date.now();
+  state.stats.chestsOpened++;
+  const roll = Math.random();
+  let reward = '';
+  if (roll < 0.4) { const amt = Math.max(500, Math.floor(state.money * 0.1)); state.money += amt; state.stats.totalEarned += amt; reward = '💰 +' + formatMoney(amt) + ' ₽'; }
+  else if (roll < 0.7) { startBoost(15 * 60 * 1000); reward = '🔥 Буст 15 минут'; }
+  else if (roll < 0.9) { const amt = Math.max(2000, Math.floor(state.money * 0.25)); state.money += amt; state.stats.totalEarned += amt; reward = '💎 +' + formatMoney(amt) + ' ₽'; }
+  else { const amt = Math.max(10000, Math.floor(state.money * 0.5)); state.money += amt; state.stats.totalEarned += amt; reward = '🎉 ДЖЕКПОТ! +' + formatMoney(amt) + ' ₽'; }
+  updateQuestProgress('chest', 1);
+  showToast('🎁 ' + reward, 'gold');
+  render(); saveState(); checkAchievements();
+});
+
+function getDayKey(ts) { const d = new Date(ts); return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate(); }
+function isSameDay(ts1, ts2) { return getDayKey(ts1) === getDayKey(ts2); }
+function isYesterday(ts) { return isSameDay(ts, Date.now() - 86400000); }
+const DAILY_REWARDS = [
+  { day: 1, type: 'money', value: 1000, label: '1000₽' }, { day: 2, type: 'money', value: 5000, label: '5K' },
+  { day: 3, type: 'boost', value: 30, label: '🔥30м' }, { day: 4, type: 'money', value: 50000, label: '50K' },
+  { day: 5, type: 'money', value: 200000, label: '200K' }, { day: 6, type: 'boost', value: 60, label: '🔥1ч' },
+  { day: 7, type: 'jackpot', value: 0, label: 'JACK' },
+];
+function canClaimDaily() { if (!state.daily.lastClaim) return true; return !isSameDay(state.daily.lastClaim, Date.now()); }
+function openDaily() {
+  const content = document.getElementById('sheetContent');
+  const today = Math.min(7, state.daily.streak + 1);
+  let html = '<div class="sheet-title">📅 Ежедневные награды</div><div class="daily-grid">';
+  DAILY_REWARDS.forEach((r, i) => {
+    const dayNum = i + 1;
+    const claimed = dayNum <= state.daily.streak;
+    const isToday = dayNum === today;
+    html += '<div class="daily-day ' + (claimed ? 'claimed' : '') + ' ' + (isToday ? 'today' : '') + '"><span class="d">Д' + dayNum + '</span><span class="r">' + r.label + '</span></div>';
+  });
+  html += '</div>';
+  const canClaim = canClaimDaily();
+  html += '<button class="daily-claim" ' + (canClaim ? '' : 'disabled') + ' onclick="claimDaily()">' + (canClaim ? '🎁 ЗАБРАТЬ НАГРАДУ' : '✓ Уже получено. Приходи завтра!') + '</button>';
+  html += '<div style="font-size:11px; opacity:.6; text-align:center; margin-top:14px;">Стрик: <b style="color:#fbbf24">' + state.daily.streak + ' / 7</b></div>';
+  content.innerHTML = html;
+  document.getElementById('sheet').classList.add('show');
+}
+function claimDaily() {
+  if (!canClaimDaily()) return;
+  if (state.daily.lastClaim && !isYesterday(state.daily.lastClaim)) state.daily.streak = 0;
+  const day = Math.min(7, state.daily.streak + 1);
+  const reward = DAILY_REWARDS[day - 1];
+  state.daily.streak = day;
+  state.daily.lastClaim = Date.now();
+  if (reward.type === 'money') { state.money += reward.value; state.stats.totalEarned += reward.value; showToast('📅 День ' + day + ': +' + formatMoney(reward.value) + ' ₽', 'ok'); }
+  else if (reward.type === 'boost') { startBoost(reward.value * 60 * 1000); showToast('📅 День ' + day + ': буст ' + reward.value + ' мин!', 'boost'); }
+  else if (reward.type === 'jackpot') {
+    const amt = Math.max(1000000, Math.floor(state.money * 1.5));
+    state.money += amt; state.stats.totalEarned += amt;
+    startBoost(60 * 60 * 1000); state.daily.streak = 0;
+    showToast('🎉 ДЖЕКПОТ! +' + formatMoney(amt) + ' ₽ и буст!', 'gold');
+  }
+  render(); saveState(); openDaily(); checkAchievements();
+}
+
+function refreshQuests() {
+  if (state.quests.list && state.quests.list.length === 3 && !state.quests.list.every(q => q.claimed)) return;
+  const pool = QUEST_POOL.slice();
+  pool.sort(() => Math.random() - 0.5);
+  state.quests.list = pool.slice(0, 3).map(q => ({ ...q, progress: 0, done: false, claimed: false }));
+  state.quests.lastRefresh = Date.now();
+  saveState();
+}
+function updateQuestProgress(type, amount) {
+  if (!state.quests.list) return;
+  state.quests.list.forEach(q => {
+    if (q.type === type && !q.done) {
+      q.progress += amount;
+      if (q.progress >= q.target) { q.progress = q.target; q.done = true; }
+    }
+  });
+  updateTopBadges();
+  saveState();
+}
+function openQuests() {
+  refreshQuests();
+  const content = document.getElementById('sheetContent');
+  let html = '<div class="sheet-title">📋 Задания</div>';
+  state.quests.list.forEach((q, idx) => {
+    const pct = Math.min(100, Math.round(q.progress / q.target * 100));
+    html += '<div class="quest-item"><div class="ico">' + q.ico + '</div><div class="info"><div class="name">' + q.name + '</div><div class="bar"><div class="fill" style="width:' + pct + '%"></div></div><div class="prog">' + Math.min(q.progress, q.target) + ' / ' + q.target + ' · ' + formatMoney(q.rew) + ' ₽</div></div>' +
+      (q.done ? (q.claimed ? '<button disabled>✓</button>' : '<button onclick="claimQuest(' + idx + ')">Забрать</button>') : '<button disabled>Ждём</button>') + '</div>';
+  });
+  content.innerHTML = html;
+  document.getElementById('sheet').classList.add('show');
+}
+function claimQuest(idx) {
+  const q = state.quests.list[idx];
+  if (!q || !q.done || q.claimed) return;
+  q.claimed = true;
+  state.money += q.rew; state.stats.totalEarned += q.rew;
+  showToast('📋 +' + formatMoney(q.rew) + ' ₽', 'ok');
+  render(); saveState();
+  if (state.quests.list.every(q => q.claimed)) setTimeout(refreshQuests, 500);
+  openQuests();
+  checkAchievements();
+}
+
+function checkAchievements() {
+  ACHIEVEMENTS.forEach(a => {
+    if (state.achievements[a.id]) return;
+    try { if (a.check(state)) {
+      state.achievements[a.id] = true;
+      state.money += a.rewMoney || 0;
+      state.stats.totalEarned += a.rewMoney || 0;
+      showAchToast(a);
+      saveState();
+    }} catch (e) {}
+  });
+}
+function showAchToast(a) {
+  const t = document.getElementById('achToast');
+  document.getElementById('achToastIco').textContent = a.ico;
+  document.getElementById('achToastName').textContent = a.name;
+  document.getElementById('achToastRew').textContent = '+' + formatMoney(a.rewMoney) + ' ₽';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+function openAch() {
+  const content = document.getElementById('sheetContent');
+  let html = '<div class="sheet-title">🏆 Достижения</div>';
+  html += '<div style="font-size:12px; opacity:.7; margin-bottom:12px;">Открыто: ' + Object.keys(state.achievements).length + ' / ' + ACHIEVEMENTS.length + '</div>';
+  ACHIEVEMENTS.forEach(a => {
+    const done = !!state.achievements[a.id];
+    html += '<div class="ach-item ' + (done ? 'done' : '') + '"><div class="ico">' + a.ico + '</div><div class="info"><div class="name">' + a.name + '</div><div class="desc">' + a.desc + '</div></div>' +
+      (done ? '<div class="done-check">✓</div>' : '<div class="rew">+' + formatMoney(a.rewMoney) + ' ₽</div>') + '</div>';
+  });
+  content.innerHTML = html;
+  document.getElementById('sheet').classList.add('show');
+}
+
+function openLB() {
+  const content = document.getElementById('sheetContent');
+  const me = { name: 'Ты', score: Math.floor(state.stats.totalEarned), me: true };
+  const bots = [
+    { name: 'Никита', score: Math.floor(me.score * (0.6 + Math.random() * 1.5)) },
+    { name: 'Влад', score: Math.floor(me.score * (0.6 + Math.random() * 1.5)) },
+    { name: 'Соня', score: Math.floor(me.score * (0.6 + Math.random() * 1.5)) },
+    { name: 'Ден', score: Math.floor(me.score * (0.6 + Math.random() * 1.5)) },
+  ];
+  const all = [me, ...bots].sort((a, b) => b.score - a.score);
+  let html = '<div class="sheet-title">📊 Топ игроков</div>';
+  all.forEach((p, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1);
+    const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    html += '<div class="lb-item ' + (p.me ? 'me' : '') + '"><div class="rank ' + rankCls + '">' + medal + '</div><div class="name">' + p.name + (p.me ? ' (ты)' : '') + '</div><div class="score">' + formatMoney(p.score) + ' ₽</div></div>';
+  });
+  content.innerHTML = html;
+  document.getElementById('sheet').classList.add('show');
+}
+
+function canFightBoss() { if (!state.boss.lastDefeat) return true; return !isSameDay(state.boss.lastDefeat, Date.now()); }
+function openBoss() {
+  if (!canFightBoss()) { showToast('👹 Босс уже повержен. Возвращайся завтра!', 'gold'); return; }
+  if (state.boss.currentHp <= 0) state.boss.currentHp = state.boss.maxHp;
+  document.getElementById('bossHpText').textContent = state.boss.currentHp + ' / ' + state.boss.maxHp;
+  document.getElementById('bossHpFill').style.width = (state.boss.currentHp / state.boss.maxHp * 100) + '%';
+  document.getElementById('bossOverlay').classList.add('show');
+}
+function closeBoss() { document.getElementById('bossOverlay').classList.remove('show'); }
+document.getElementById('bossHit').addEventListener('click', () => {
+  if (state.boss.currentHp <= 0) return;
+  const dmg = Math.max(10, Math.floor(totalPassive() * 5 + 100));
+  state.boss.currentHp = Math.max(0, state.boss.currentHp - dmg);
+  document.getElementById('bossHpText').textContent = state.boss.currentHp + ' / ' + state.boss.maxHp;
+  document.getElementById('bossHpFill').style.width = (state.boss.currentHp / state.boss.maxHp * 100) + '%';
+  if (state.boss.currentHp <= 0) {
+    const rew = Math.max(100000, Math.floor(state.money * 0.8));
+    state.money += rew; state.stats.totalEarned += rew;
+    state.stats.bossDefeated++;
+    state.boss.lastDefeat = Date.now();
+    state.boss.maxHp = Math.floor(state.boss.maxHp * 1.5);
+    state.boss.currentHp = state.boss.maxHp;
+    setTimeout(() => {
+      closeBoss();
+      showToast('👹 БОСС ПОВЕРЖЕН! +' + formatMoney(rew) + ' ₽', 'gold');
+      render(); checkAchievements(); saveState();
+    }, 400);
+  }
+});
+
+const ENGINE_PRICES = [1000, 5000, 25000, 100000, 500000, 2500000, 10000000, 50000000, 250000000, 1000000000];
+const TRANSMISSION_PRICES = [800, 4000, 20000, 80000, 400000, 2000000, 8000000, 40000000, 200000000, 800000000];
+function engineBonus() { return 1 + state.engine.level * 0.15; }
+function transmissionBonus() { return 1 + state.transmission.level * 0.1; }
+function totalPower() { if (!state.currentCar) return 0; const base = getCar(state.currentCar).income * 2; return base * engineBonus(); }
+function totalSpeed() { if (!state.currentCar) return 0; return transmissionBonus(); }
+
+function openGarageUpgrades() {
+  if (!state.currentCar) {
+    document.getElementById('sheetContent').innerHTML = '<div class="sheet-title">🏎️ Прокачка</div><div style="text-align:center; padding:40px; color:#64748b;">Купи тачку.</div>';
+    document.getElementById('sheet').classList.add('show');
+    return;
+  }
+  const money = state.money;
+  const el = state.engine.level, tl = state.transmission.level;
+  let html = '<div class="sheet-title">🏎️ Прокачка</div>';
+  const eNext = el < 10 ? ENGINE_PRICES[el] : null;
+  const eCan = eNext !== null && money >= eNext;
+  html += '<div class="tune-section"><div class="head"><span>⚙️</span>Двигатель · Ур. <b style="color:#fbbf24">' + el + ' / 10</b><span class="price">' + (eNext !== null ? formatMoney(eNext) + ' ₽' : 'МАКС') + '</span></div><div class="tune-row"><div class="label">Мощность<b style="color:#4ade80; display:block;">×' + engineBonus().toFixed(2) + '</b></div>' + (eNext !== null ? '<button class="buy" ' + (eCan ? '' : 'disabled') + ' onclick="upgradeEngine()">Улучшить</button>' : '<button class="buy" disabled>MAX</button>') + '</div></div>';
+  const tNext = tl < 10 ? TRANSMISSION_PRICES[tl] : null;
+  const tCan = tNext !== null && money >= tNext;
+  html += '<div class="tune-section"><div class="head"><span>🔧</span>Трансмиссия · Ур. <b style="color:#fbbf24">' + tl + ' / 10</b><span class="price">' + (tNext !== null ? formatMoney(tNext) + ' ₽' : 'МАКС') + '</span></div><div class="tune-row"><div class="label">Скорость<b style="color:#4ade80; display:block;">×' + transmissionBonus().toFixed(2) + '</b></div>' + (tNext !== null ? '<button class="buy" ' + (tCan ? '' : 'disabled') + ' onclick="upgradeTransmission()">Улучшить</button>' : '<button class="buy" disabled>MAX</button>') + '</div></div>';
+  html += '<div class="tune-section" style="border-color:rgba(251,191,36,.5); background:linear-gradient(180deg,rgba(251,191,36,.15),rgba(251,191,36,.02));"><div class="head"><span>💪</span>Итоговая мощь</div><div style="font-size:24px; font-weight:900; color:#fbbf24; text-align:center; padding:8px 0;">' + Math.round(totalPower() * totalSpeed()) + '</div></div>';
+  document.getElementById('sheetContent').innerHTML = html;
+  document.getElementById('sheet').classList.add('show');
+}
+function upgradeEngine() {
+  const lvl = state.engine.level;
+  if (lvl >= 10) return;
+  const price = ENGINE_PRICES[lvl];
+  if (state.money < price) { showToast('🔒 Не хватает', 'err'); return; }
+  state.money -= price;
+  state.engine.level++;
+  state.stats.engineLevel = state.engine.level;
+  saveState(); render(); openGarageUpgrades(); checkAchievements();
+  showToast('⚙️ Двигатель → ур. ' + state.engine.level, 'ok');
+}
+function upgradeTransmission() {
+  const lvl = state.transmission.level;
+  if (lvl >= 10) return;
+  const price = TRANSMISSION_PRICES[lvl];
+  if (state.money < price) { showToast('🔒 Не хватает', 'err'); return; }
+  state.money -= price;
+  state.transmission.level++;
+  state.stats.transmissionLevel = state.transmission.level;
+  saveState(); render(); openGarageUpgrades(); checkAchievements();
+  showToast('🔧 Трансмиссия → ур. ' + state.transmission.level, 'ok');
+}
+
+const RACE_OPPONENTS = [
+  { id: 0, name: 'Новичок', ico: '🚕', power: 100, rew: 5000, winChance: 0.65, cooldown: 30000 },
+  { id: 1, name: 'Любитель', ico: '🚗', power: 1000, rew: 50000, winChance: 0.55, cooldown: 60000 },
+  { id: 2, name: 'Профи', ico: '🏎️', power: 10000, rew: 500000, winChance: 0.5, cooldown: 120000 },
+  { id: 3, name: 'Чемпион', ico: '🏁', power: 100000, rew: 5000000, winChance: 0.45, cooldown: 300000 },
+  { id: 4, name: 'Легенда', ico: '👑', power: 1000000, rew: 50000000, winChance: 0.4, cooldown: 600000 },
+];
+
+function openRace() {
+  const content = document.getElementById('sheetContent');
+  const myPower = totalPower() * totalSpeed();
+  const hasEngine = state.engine.level > 0;
+  let html = '<div class="sheet-title">🏁 Гонки</div>';
+  html += '<div style="background:linear-gradient(180deg,rgba(251,191,36,.15),rgba(251,191,36,.02)); border:1px solid rgba(251,191,36,.4); border-radius:12px; padding:12px; margin-bottom:14px; text-align:center;"><div style="font-size:12px; opacity:.8;">Мощь твоей тачки</div><div style="font-size:24px; font-weight:900; color:#fbbf24;">' + Math.round(myPower) + '</div><div style="font-size:11px; opacity:.7;">Двигатель ×' + engineBonus().toFixed(2) + ' · Трансмиссия ×' + transmissionBonus().toFixed(2) + '</div></div>';
+  if (!hasEngine) html += '<div style="background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.5); border-radius:12px; padding:12px; margin-bottom:14px; text-align:center; font-size:13px; color:#fca5a5;">⚠️ Прокачай двигатель!</div>';
+  RACE_OPPONENTS.forEach(op => {
+    const lastKey = 'race_' + op.id;
+    const lastTs = state.race[lastKey] || 0;
+    const onCd = Date.now() - lastTs < op.cooldown;
+    const cdLeft = onCd ? Math.ceil((op.cooldown - (Date.now() - lastTs)) / 1000) : 0;
+    const lockIcon = !hasEngine ? '🔒 ' : (onCd ? '⏳ ' : '');
+    const btnText = !hasEngine ? 'Нужен двигатель' : (onCd ? 'Через ' + cdLeft + 'с' : '🏁 Погнали!');
+    html += '<div class="car-item"><div class="thumb" style="font-size:44px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.4);">' + op.ico + '</div><div class="info"><div class="name">' + op.name + '</div><div class="meta"><span style="color:#f59e0b;">⚡ ' + op.power + '</span><span class="inc">💰 +' + formatMoney(op.rew) + ' ₽</span></div><div style="font-size:10.5px; margin-top:3px; opacity:.7;">Шанс ~' + Math.round(op.winChance * 100) + '%</div></div><div class="action"><button ' + ((hasEngine && !onCd) ? '' : 'disabled') + ' onclick="startRace(' + op.id + ')">' + lockIcon + btnText + '</button></div></div>';
+  });
+  html += '<div style="font-size:11px; opacity:.6; text-align:center; margin-top:14px;">Победы: <b style="color:#4ade80">' + (state.race.wins || 0) + '</b> · Поражения: <b style="color:#fca5a5">' + (state.race.losses || 0) + '</b></div>';
+  content.innerHTML = html;
+  document.getElementById('sheet').classList.add('show');
+}
+
+function startRace(opId) {
+  const op = RACE_OPPONENTS[opId];
+  if (!op) return;
+  const myPower = totalPower() * totalSpeed();
+  if (state.engine.level === 0) { showToast('🔒 Прокачай двигатель', 'err'); return; }
+  const lastKey = 'race_' + opId;
+  const lastTs = state.race[lastKey] || 0;
+  if (Date.now() - lastTs < op.cooldown) { showToast('⏳ Рано', 'err'); return; }
+  let baseChance = op.winChance;
+  const ratio = myPower / op.power;
+  if (ratio > 2) baseChance += 0.2;
+  else if (ratio > 1.5) baseChance += 0.1;
+  else if (ratio < 0.7) baseChance -= 0.15;
+  baseChance = Math.max(0.15, Math.min(0.85, baseChance));
+  const win = Math.random() < baseChance;
+  state.race.lastRace = Date.now();
+  state.race[lastKey] = Date.now();
+  document.getElementById('sheet').classList.remove('show');
+  showRaceAnimation(op, win, () => {
+    if (win) {
+      state.money += op.rew;
+      state.stats.totalEarned += op.rew;
+      state.race.wins++;
+      state.stats.racesWon++;
+      state.race.streak++;
+      updateQuestProgress('race', 1);
+    } else {
+      state.race.losses++;
+      state.race.streak = 0;
+    }
+    saveState(); render(); checkAchievements();
+    setTimeout(() => showRaceResult(win, op, win ? op.rew : 0), 200);
+  });
+}
+
+/* Реалистичные машины — нос ВПРАВО */
+function getRaceCarIcon(type, opIco) {
+  if (type === 'me') {
+    return '<svg viewBox="0 0 260 110" width="150" height="64">' +
+      /* Тень под машиной */
+      '<ellipse cx="130" cy="100" rx="118" ry="6" fill="rgba(0,0,0,.55)"/>' +
+      /* Заднее колесо */
+      '<circle cx="60" cy="86" r="20" fill="#0a0a0a"/><circle cx="60" cy="86" r="13" fill="#2a2a2a"/><circle cx="60" cy="86" r="7" fill="#b8b8b8"/><circle cx="60" cy="86" r="3" fill="#5a5a5a"/>' +
+      /* Переднее колесо */
+      '<circle cx="200" cy="86" r="20" fill="#0a0a0a"/><circle cx="200" cy="86" r="13" fill="#2a2a2a"/><circle cx="200" cy="86" r="7" fill="#b8b8b8"/><circle cx="200" cy="86" r="3" fill="#5a5a5a"/>' +
+      /* Кузов */
+      '<path d="M 15,86 L 15,66 Q 15,58 25,56 L 80,52 L 105,28 Q 110,24 118,24 L 195,24 Q 204,24 210,32 L 230,54 L 244,58 Q 250,60 250,68 L 250,86 L 230,86 A 30,30 0 0 0 170,86 L 90,86 A 30,30 0 0 0 30,86 Z" fill="#e8dfc8" stroke="#1a1a1a" stroke-width="1.5"/>' +
+      /* Блик на кузове */
+      '<path d="M 25,58 L 80,54 L 105,30 Q 108,26 118,26 L 195,26 Q 200,26 206,32 L 224,54 L 244,58" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"/>' +
+      /* Окна */
+      '<path d="M 110,52 L 122,30 Q 124,28 128,28 L 195,28 Q 200,28 204,33 L 218,52 Z" fill="#1a2830" stroke="#0a0a0a" stroke-width="1.5"/>' +
+      /* Стойка двери */
+      '<line x1="165" y1="28" x2="165" y2="52" stroke="#0a0a0a" stroke-width="3"/>' +
+      /* Линия двери */
+      '<line x1="108" y1="54" x2="108" y2="86" stroke="#1a1a1a" stroke-width="1.2"/>' +
+      /* Ручка двери */
+      '<rect x="140" y="64" width="14" height="4" rx="1.5" fill="#1a1a1a"/>' +
+      /* Фара передняя (справа) */
+      '<rect x="242" y="66" width="10" height="8" rx="1.5" fill="#fffbe8" stroke="#0a0a0a" stroke-width="0.8"/>' +
+      /* Стоп-сигнал задний (слева) */
+      '<rect x="14" y="68" width="8" height="14" rx="1.5" fill="#c0392b" stroke="#0a0a0a" stroke-width="0.8"/>' +
+      /* Бамперы */
+      '<rect x="10" y="80" width="12" height="8" rx="1" fill="#a8a8a8" stroke="#0a0a0a" stroke-width="0.8"/>' +
+      '<rect x="246" y="80" width="12" height="8" rx="1" fill="#a8a8a8" stroke="#0a0a0a" stroke-width="0.8"/>' +
+      /* Колесо арки тёмные */
+      '<path d="M 32,86 A 28,28 0 0 1 88,86" fill="none" stroke="#000" stroke-width="2"/>' +
+      '<path d="M 172,86 A 28,28 0 0 1 228,86" fill="none" stroke="#000" stroke-width="2"/>' +
+    '</svg>';
+  }
+  /* Машина бота — тёмная */
+  return '<svg viewBox="0 0 260 110" width="150" height="64">' +
+    '<ellipse cx="130" cy="100" rx="118" ry="6" fill="rgba(0,0,0,.55)"/>' +
+    '<circle cx="60" cy="86" r="20" fill="#0a0a0a"/><circle cx="60" cy="86" r="13" fill="#2a2a2a"/><circle cx="60" cy="86" r="7" fill="#b8b8b8"/><circle cx="60" cy="86" r="3" fill="#5a5a5a"/>' +
+    '<circle cx="200" cy="86" r="20" fill="#0a0a0a"/><circle cx="200" cy="86" r="13" fill="#2a2a2a"/><circle cx="200" cy="86" r="7" fill="#b8b8b8"/><circle cx="200" cy="86" r="3" fill="#5a5a5a"/>' +
+    '<path d="M 15,86 L 15,66 Q 15,58 25,56 L 80,52 L 105,28 Q 110,24 118,24 L 195,24 Q 204,24 210,32 L 230,54 L 244,58 Q 250,60 250,68 L 250,86 L 230,86 A 30,30 0 0 0 170,86 L 90,86 A 30,30 0 0 0 30,86 Z" fill="#2c3e50" stroke="#0a0a0a" stroke-width="1.5"/>' +
+    '<path d="M 25,58 L 80,54 L 105,30 Q 108,26 118,26 L 195,26 Q 200,26 206,32 L 224,54 L 244,58" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>' +
+    '<path d="M 110,52 L 122,30 Q 124,28 128,28 L 195,28 Q 200,28 204,33 L 218,52 Z" fill="#0a1015" stroke="#000" stroke-width="1.5"/>' +
+    '<line x1="165" y1="28" x2="165" y2="52" stroke="#000" stroke-width="3"/>' +
+    '<line x1="108" y1="54" x2="108" y2="86" stroke="#0a0a0a" stroke-width="1.2"/>' +
+    '<rect x="140" y="64" width="14" height="4" rx="1.5" fill="#0a0a0a"/>' +
+    '<rect x="242" y="66" width="10" height="8" rx="1.5" fill="#fde68a" stroke="#0a0a0a" stroke-width="0.8"/>' +
+    '<rect x="14" y="68" width="8" height="14" rx="1.5" fill="#c0392b" stroke="#0a0a0a" stroke-width="0.8"/>' +
+    '<rect x="10" y="80" width="12" height="8" rx="1" fill="#4a4a4a" stroke="#0a0a0a" stroke-width="0.8"/>' +
+    '<rect x="246" y="80" width="12" height="8" rx="1" fill="#4a4a4a" stroke="#0a0a0a" stroke-width="0.8"/>' +
+    '<path d="M 32,86 A 28,28 0 0 1 88,86" fill="none" stroke="#000" stroke-width="2"/>' +
+    '<path d="M 172,86 A 28,28 0 0 1 228,86" fill="none" stroke="#000" stroke-width="2"/>' +
+    '<text x="130" y="80" text-anchor="middle" font-size="18" font-family="system-ui">' + (opIco || '🚗') + '</text>' +
+  '</svg>';
+}
+
+function showRaceAnimation(op, win, onFinish) {
+  const overlay = document.createElement('div');
+  overlay.className = 'race-overlay';
+
+  /* Разметка по центру дороги — сегменты, сужающиеся к горизонту */
+  let centerLineHtml = '';
+  const segCount = 6;
+  for (let i = 0; i < segCount; i++) {
+    /* Верхние сегменты — короткие и узкие, нижние — длинные и широкие */
+    const topPct = 3 + i * 16;
+    const heightPct = 4 + i * 2;
+    centerLineHtml += '<div class="seg" style="top:' + topPct + '%; height:' + heightPct + '%;"></div>';
+  }
+
+  overlay.innerHTML =
+    '<div class="race-scene">' +
+      '<div class="race-sky"></div>' +
+      '<div class="race-clouds"></div>' +
+      '<div class="race-mountains"></div>' +
+      '<div class="race-forest-far"></div>' +
+      '<div class="race-forest"></div>' +
+      '<div class="race-grass"></div>' +
+      '<div class="race-road"></div>' +
+      '<div class="race-edge left"></div>' +
+      '<div class="race-edge right"></div>' +
+      '<div class="race-center-line">' + centerLineHtml + '</div>' +
+      '<div class="race-grass-near"></div>' +
+      '<div class="race-finish-line"></div>' +
+      '<div class="race-finish-text">ФИНИШ</div>' +
+      '<div class="race-start-line"></div>' +
+      '<div class="race-start-text">СТАРТ</div>' +
+      '<div class="race-car race-car-me" id="raceMe">' + getRaceCarIcon('me') + '</div>' +
+      '<div class="race-car race-car-op" id="raceOp">' + getRaceCarIcon('op', op.ico) + '</div>' +
+      '<div class="race-label">ПРОТИВ: ' + op.name + '</div>' +
+      '<div class="race-countdown" id="raceCountdown"></div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+
+  const me = overlay.querySelector('#raceMe');
+  const opEl = overlay.querySelector('#raceOp');
+  const countdown = overlay.querySelector('#raceCountdown');
+
+  /* Стартуют слева */
+  me.style.left = '-25%';
+  opEl.style.left = '-25%';
+
+  /* Едут ВПРАВО — к финишу справа */
+  const meEnd = win ? 90 : 55 + Math.random() * 8;
+  const opEnd = win ? 55 + Math.random() * 8 : 90;
+  const meDur = 3200 + Math.random() * 700;
+  const opDur = 3200 + Math.random() * 700;
+
+  let step = 0;
+  const steps = ['3', '2', '1', 'START'];
+  function tick() {
+    if (step >= steps.length) {
+      countdown.style.display = 'none';
+      /* Машины едут СЛЕВА НАПРАВО */
+      me.animate([{ left: '-25%' }, { left: meEnd + '%' }], { duration: meDur, easing: 'cubic-bezier(.35,.05,.4,1)', fill: 'forwards' });
+      opEl.animate([{ left: '-25%' }, { left: opEnd + '%' }], { duration: opDur, easing: 'cubic-bezier(.35,.05,.4,1)', fill: 'forwards' });
+      me.classList.add('race-shake');
+      opEl.classList.add('race-shake');
+      return;
+    }
+    const val = steps[step];
+    const isStart = val === 'START';
+    countdown.innerHTML = '<div class="num' + (isStart ? ' start' : '') + '">' + val + '</div>';
+    const num = countdown.querySelector('.num');
+    num.style.animation = 'none';
+    void num.offsetWidth;
+    num.style.animation = '';
+    step++;
+    setTimeout(tick, isStart ? 800 : 900);
+  }
+  setTimeout(tick, 400);
+
+  const finishDelay = 400 + 3 * 900 + 800 + Math.max(meDur, opDur) + 400;
+  setTimeout(() => {
+    me.classList.remove('race-shake');
+    opEl.classList.remove('race-shake');
+    const winner = win ? me : opEl;
+    winner.classList.add('race-winner');
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      overlay.style.transition = 'opacity .4s';
+      setTimeout(() => {
+        overlay.remove();
+        document.body.style.overflow = '';
+        if (onFinish) onFinish();
+      }, 400);
+    }, 800);
+  }, finishDelay);
+}
+
+function showRaceResult(win, op, rew) {
+  const ov = document.createElement('div');
+  ov.className = 'boss-overlay show';
+  ov.innerHTML =
+    '<div class="boss-card" style="background:' + (win ? 'linear-gradient(180deg,#14532d,#052e16)' : 'linear-gradient(180deg,#3a1414,#1a0606)') + '; border-color:' + (win ? '#22c55e' : '#ef4444') + ';">' +
+      '<div style="font-size:64px; margin-bottom:8px;">' + (win ? '🏆' : '💥') + '</div>' +
+      '<div style="font-size:26px; font-weight:900; color:' + (win ? '#4ade80' : '#fca5a5') + '; margin-bottom:8px;">' + (win ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ') + '</div>' +
+      '<div style="font-size:14px; color:#cbd5e1; margin-bottom:16px;">' + (win ? 'Ты обошёл ' + op.name + '!' : op.name + ' оказался быстрее.') + '</div>' +
+      (win ? '<div style="font-size:32px; font-weight:900; color:#fbbf24; margin-bottom:16px;">+' + formatMoney(rew) + ' ₽</div>' : '') +
+      '<button class="boss-hit" onclick="this.closest(\'.boss-overlay\').remove()" style="' + (win ? 'background:linear-gradient(180deg,#22c55e,#16a34a);' : '') + '">' + (win ? '🎉 Продолжить' : '😤 Ещё раз') + '</button>' +
+    '</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
 }
 
 function renderGarage() {
   const owned = Object.keys(state.cars).filter(id => getCar(id));
   let html = '<div class="sheet-title">🚗 Мой гараж</div>';
-  if (!owned.length) {
-    html += `<div style="text-align:center; padding:40px 10px; color:#64748b; font-size:14px; line-height:1.6;">Тут пока пусто.<br>Купи первую тачку на <b style="color:#fbbf24">Б/У рынке</b>.</div>`;
-    sheetContent.innerHTML = html; return;
-  }
+  if (!owned.length) { html += '<div style="text-align:center; padding:40px; color:#64748b;">Купи первую тачку.</div>'; document.getElementById('sheetContent').innerHTML = html; return; }
   owned.forEach(id => {
     const car = getCar(id);
     const cs = carState(id);
     const inc = clickIncome(id);
     const pass = passiveOf(id);
     const selected = state.currentCar === id;
-    html += `
-      <div class="car-item ${selected ? 'selected' : ''}">
-        <div class="thumb">${carSVG(id)}</div>
-        <div class="info">
-          <div class="name">${car.name}${cs.lowering ? ' · БПАН' : ''}</div>
-          <div class="meta">
-            <span class="inc">+${formatRate(inc)}₽/тап</span>
-            <span class="passive">+${formatRate(pass)}₽/сек</span>
-            ${cs.rust > 0 ? `<span class="rust">${Math.round(cs.rust)}% рж.</span>` : ''}
-          </div>
-        </div>
-        <div class="action">
-          ${selected ? '<button class="owned-badge">✓ Активна</button>'
-                     : `<button class="ghost-green" onclick="selectCar('${id}')">Выбрать</button>`}
-        </div>
-      </div>`;
+    html += '<div class="car-item ' + (selected ? 'selected' : '') + '"><div class="thumb">' + carVisual(id) + '</div><div class="info"><div class="name">' + car.name + (cs.lowering ? ' · БПАН' : '') + '</div><div class="meta"><span class="inc">+' + formatRate(inc) + '₽/тап</span><span class="passive">+' + formatRate(pass) + '₽/сек</span></div></div><div class="action">' + (selected ? '<button class="owned-badge">✓ Активна</button>' : '<button class="ghost-green" onclick="selectCar(\'' + id + '\')">Выбрать</button>') + '</div></div>';
   });
-  sheetContent.innerHTML = html;
+  document.getElementById('sheetContent').innerHTML = html;
 }
 function selectCar(id) { state.currentCar = id; saveState(); render(); renderGarage(); showToast('Тачка выбрана!', 'ok'); }
 
@@ -1547,167 +1677,72 @@ function renderMarket() {
     const owned = isOwned(car.id);
     const canAfford = state.money >= car.price;
     const locked = !owned && !canAfford;
-    html += `
-      <div class="car-item ${owned ? 'owned' : ''} ${locked ? 'locked' : ''}">
-        <div class="thumb">${carSVG(car.id)}</div>
-        <div class="info">
-          <div class="name">${car.name}</div>
-          <div class="meta">
-            <span class="inc">+${formatMoney(car.income)}₽/тап</span>
-            <span class="passive">+${formatRate(car.passive)}₽/сек</span>
-            ${owned ? '<span style="color:#4ade80">✓ Куплена</span>'
-                    : (locked ? '<span class="rust">нужно накопить</span>' : '<span class="rust">25% ржавчины</span>')}
-          </div>
-        </div>
-        <div class="action">
-          ${owned ? '<button class="owned-badge">В гараже</button>'
-                  : `<button ${canAfford ? '' : 'disabled'} onclick="buyCar('${car.id}')">${locked ? '🔒 ' : ''}${formatMoney(car.price)} ₽</button>`}
-        </div>
-      </div>`;
+    html += '<div class="car-item ' + (owned ? 'owned' : '') + ' ' + (locked ? 'locked' : '') + '"><div class="thumb">' + carVisual(car.id) + '</div><div class="info"><div class="name">' + car.name + '</div><div class="meta"><span class="inc">+' + formatMoney(car.income) + '₽/тап</span><span class="passive">+' + formatRate(car.passive) + '₽/сек</span></div></div><div class="action">' + (owned ? '<button class="owned-badge">В гараже</button>' : '<button ' + (canAfford ? '' : 'disabled') + ' onclick="buyCar(\'' + car.id + '\')">' + (locked ? '🔒 ' : '') + formatMoney(car.price) + ' ₽</button>') + '</div></div>';
   });
-  sheetContent.innerHTML = html;
+  document.getElementById('sheetContent').innerHTML = html;
 }
 function buyCar(id) {
   const car = getCar(id); if (!car) return;
   if (isOwned(id)) { showToast('Уже куплена!', 'err'); return; }
   if (state.money < car.price) { showToast('Не хватает денег', 'err'); return; }
   state.money -= car.price;
-  state.cars[id] = { rust: 25, color: null, tint: false, wheels: 'steel', lowering: false };
+  state.cars[id] = { rust: 25, color: null, tint: (id === 'vaz2107'), wheels: 'steel', lowering: false };
   state.currentCar = id;
-  saveState(); render(); renderMarket();
-  showToast(`Куплено: ${car.name}! +${formatRate(car.passive)}₽/сек`, 'ok');
+  updateQuestProgress('buycar', 1);
+  saveState(); render(); renderMarket(); checkAchievements();
+  showToast('Куплено: ' + car.name + '!', 'ok');
 }
 
 function renderTuning() {
-  if (!state.currentCar || !getCar(state.currentCar)) {
-    sheetContent.innerHTML = '<div class="sheet-title">🔧 Тюнинг</div><div style="text-align:center; padding:40px 10px; color:#64748b; font-size:14px; line-height:1.6;">Сначала купи тачку на Б/У рынке.</div>';
-    return;
-  }
+  if (!state.currentCar || !getCar(state.currentCar)) { document.getElementById('sheetContent').innerHTML = '<div class="sheet-title">🔧 Тюнинг</div><div style="text-align:center; padding:40px; color:#64748b;">Купи тачку.</div>'; return; }
   const car = getCar(state.currentCar);
   const cs = carState(state.currentCar);
   const money = state.money;
   const T = car.tune;
-  const paintClickB   = tuneClickBonus(car, 'paint');
-  const tintClickB    = tuneClickBonus(car, 'tint');
-  const tintPassB     = tunePassiveBonus(car, 'tint');
-  const wheelsPassB   = tunePassiveBonus(car, 'wheels');
-  const lowerClickB   = tuneClickBonus(car, 'lowering');
-  const lowerPassB    = tunePassiveBonus(car, 'lowering');
-
-  let html = `<div class="sheet-title">🔧 Тюнинг · ${car.name}</div>`;
-
+  let html = '<div class="sheet-title">🔧 Тюнинг · ' + car.name + '</div>';
   const canPaint = money >= T.paint;
-  html += `
-    <div class="tune-section ${canPaint ? '' : 'locked'}">
-      <div class="head">
-        <span class="ico">🎨</span>Покраска ${canPaint ? '' : '🔒'}
-        <span class="bonus">+${formatRate(paintClickB)} ₽/тап</span>
-        <span class="price">${formatMoney(T.paint)} ₽</span>
-      </div>
-      <div class="color-grid">`;
+  html += '<div class="tune-section"><div class="head"><span>🎨</span>Покраска ' + (canPaint ? '' : '🔒') + '<span class="price">' + formatMoney(T.paint) + ' ₽</span></div><div class="color-grid">';
   COLORS.forEach(c => {
-    const isCurrent = (cs.color || car.color) === c.hex;
-    const lockedCell = !canPaint && !isCurrent;
-    html += `<div class="color-cell ${isCurrent ? 'active' : ''} ${lockedCell ? 'locked' : ''}" style="background:${c.hex}" title="${c.name}" onclick="paintCar('${c.hex}')"></div>`;
+    const isCur = (cs.color || car.color) === c.hex;
+    html += '<div class="color-cell ' + (isCur ? 'active' : '') + ' ' + ((!canPaint && !isCur) ? 'locked' : '') + '" style="background:' + c.hex + '" onclick="paintCar(\'' + c.hex + '\')"></div>';
   });
-  html += `</div></div>`;
-
+  html += '</div></div>';
   const wheelPrices = { steel: 0, torus: T.wheels, alloy: Math.round(T.wheels * 1.5) };
-  const wheelNames = { steel: 'Штампы', torus: 'Торусы', alloy: 'Литые' };
-  html += `
-    <div class="tune-section">
-      <div class="head">
-        <span class="ico">⚙️</span>Диски
-        <span class="bonus">+${formatRate(wheelsPassB)} ₽/сек</span>
-      </div>
-      <div class="wheel-grid">`;
+  html += '<div class="tune-section"><div class="head"><span>⚙️</span>Диски</div><div class="wheel-grid">';
   ['steel','torus','alloy'].forEach(kind => {
     const isActive = cs.wheels === kind;
     const price = wheelPrices[kind];
-    const canAfford = money >= price || isActive;
-    const locked = !isActive && !canAfford;
-    html += `
-      <button class="wheel-opt ${isActive ? 'active' : ''} ${locked ? 'locked' : ''}" onclick="setWheels('${kind}')">
-        ${locked ? '<span class="wheel-lock">🔒</span>' : ''}
-        <div class="wheel-prev">${wheelPreviewSVG(kind)}</div>
-        <div class="wheel-name">${wheelNames[kind]}</div>
-        <div class="wheel-price">${price === 0 ? 'бесплатно' : formatMoney(price) + ' ₽'}</div>
-      </button>
-    `;
+    const can = money >= price || isActive;
+    const names = { steel: 'Штампы', torus: 'Торусы', alloy: 'Литые' };
+    html += '<button class="wheel-opt ' + (isActive ? 'active' : '') + ' ' + (!can ? 'locked' : '') + '" onclick="setWheels(\'' + kind + '\')"><div class="wheel-prev">' + wheelPreviewSVG(kind) + '</div><div class="wheel-name">' + names[kind] + '</div><div class="wheel-price">' + (price === 0 ? 'беспл.' : formatMoney(price) + ' ₽') + '</div></button>';
   });
-  html += `</div></div>`;
-
+  html += '</div></div>';
   const canTint = money >= T.tint;
-  const tintLocked = !canTint && !cs.tint;
-  html += `
-    <div class="tune-section">
-      <div class="head"><span class="ico">🌑</span>Тонировка</div>
-      <div class="tune-row">
-        <div class="label">
-          Тёмные стёкла ${tintLocked ? '🔒' : ''}
-          <span class="desc">${formatMoney(T.tint)} ₽ · <span class="pos">+${formatRate(tintClickB)} ₽/тап · +${formatRate(tintPassB)} ₽/сек</span></span>
-        </div>
-        <div class="toggle ${cs.tint ? 'on' : ''} ${tintLocked ? 'locked' : ''}" onclick="toggleTint()"></div>
-      </div>
-    </div>`;
-
+  html += '<div class="tune-section"><div class="head"><span>🌑</span>Тонировка<span class="price">' + formatMoney(T.tint) + ' ₽</span></div><div class="tune-row"><div class="label">Тёмные стёкла</div><div class="toggle ' + (cs.tint ? 'on' : '') + ' ' + (!canTint && !cs.tint ? 'locked' : '') + '" onclick="toggleTint()"></div></div></div>';
   const canLower = money >= T.lowering;
-  const lowerLocked = !canLower && !cs.lowering;
-  html += `
-    <div class="tune-section bpan ${canLower || cs.lowering ? '' : 'locked'}">
-      <div class="head">
-        <span class="ico">⬇️</span>Занижение <span style="color:#c4b5fd;font-size:11px;font-weight:900;letter-spacing:1px;">БПАН</span> ${lowerLocked ? '🔒' : ''}
-        <span class="bonus purple">+${formatRate(lowerClickB)} ₽/тап · +${formatRate(lowerPassB)} ₽/сек</span>
-        <span class="price">${formatMoney(T.lowering)} ₽</span>
-      </div>
-      <div class="tune-row">
-        <div class="label">
-          Низкая посадка
-          <span class="desc">Кузов опускается над колёсами · <span class="pos purple">+25% клик · +25% пассив</span></span>
-        </div>
-        <div class="toggle purple ${cs.lowering ? 'on' : ''} ${lowerLocked ? 'locked' : ''}" onclick="toggleLowering()"></div>
-      </div>
-    </div>`;
-
-  html += `
-    <div class="tune-section">
-      <div class="head">
-        <span class="ico">🛠️</span>Ремонт ржавчины · ${Math.round(cs.rust)}%
-        <span class="price">${formatMoney(T.rust)} ₽ / 1%</span>
-      </div>`;
-  if (cs.rust <= 0) {
-    html += `<div style="font-size:13px; color:#4ade80; padding:6px 0;">✓ Тачка как новая, без ржавчины</div>`;
-  } else {
-    [10, 25, 50, 999].forEach(amt => {
-      const actual = Math.min(amt, cs.rust);
-      const cost = Math.ceil(actual * T.rust);
-      const canAfford = money >= cost;
-      const label = amt === 10 ? 'Мелкий ремонт' : amt === 25 ? 'Средний ремонт' : amt === 50 ? 'Капремонт' : 'Полный ремонт';
-      html += `
-        <div class="tune-row">
-          <div class="label">${label}
-            <span class="desc">−${Math.round(actual)}% ржавчины · <span class="pos">восстанавливает доход</span></span>
-          </div>
-          <button class="buy" ${canAfford ? '' : 'disabled'} onclick="repairRust(${amt})">${canAfford ? '' : '🔒 '}${formatMoney(cost)} ₽</button>
-        </div>`;
-    });
-  }
-  html += `</div>`;
-  sheetContent.innerHTML = html;
+  html += '<div class="tune-section bpan"><div class="head"><span>⬇️</span>БПАН<span class="price">' + formatMoney(T.lowering) + ' ₽</span></div><div class="tune-row"><div class="label">Занижение</div><div class="toggle purple ' + (cs.lowering ? 'on' : '') + ' ' + (!canLower && !cs.lowering ? 'locked' : '') + '" onclick="toggleLowering()"></div></div></div>';
+  html += '<div class="tune-section"><div class="head"><span>🛠️</span>Ремонт · ' + Math.round(cs.rust) + '%<span class="price">' + formatMoney(T.rust) + ' ₽ / 1%</span></div>';
+  if (cs.rust <= 0) html += '<div style="font-size:13px; color:#4ade80; padding:6px 0;">✓ Как новая</div>';
+  else [10, 25, 50, 999].forEach(amt => {
+    const actual = Math.min(amt, cs.rust);
+    const cost = Math.ceil(actual * T.rust);
+    const can = money >= cost;
+    html += '<div class="tune-row"><div class="label">−' + Math.round(actual) + '%</div><button class="buy" ' + (can ? '' : 'disabled') + ' onclick="repairRust(' + amt + ')">' + formatMoney(cost) + ' ₽</button></div>';
+  });
+  html += '</div>';
+  document.getElementById('sheetContent').innerHTML = html;
 }
-
 function paintCar(hex) {
   if (!state.currentCar) return;
   const car = getCar(state.currentCar);
   const cs = carState(state.currentCar);
   if ((cs.color || car.color) === hex) return;
-  if (state.money < car.tune.paint) { showToast('🔒 Не хватает на покраску', 'err'); return; }
-  const wasOwned = !!cs.color;
-  state.money -= car.tune.paint;
-  cs.color = hex;
-  saveState(); render(); renderTuning();
-  if (wasOwned) showToast('Цвет изменён', 'ok');
-  else showToast(`🎨 Покрашено! +${formatRate(tuneClickBonus(car, 'paint') * boostMult())} ₽/тап`, 'ok');
+  if (state.money < car.tune.paint) { showToast('🔒 Не хватает', 'err'); return; }
+  state.money -= car.tune.paint; cs.color = hex;
+  state.stats.totalTune++;
+  updateQuestProgress('paint', 1);
+  saveState(); render(); renderTuning(); checkAchievements();
+  showToast('🎨 Покрашено!', 'ok');
 }
 function setWheels(kind) {
   if (!state.currentCar) return;
@@ -1715,40 +1750,35 @@ function setWheels(kind) {
   const cs = carState(state.currentCar);
   if (cs.wheels === kind) return;
   const prices = { steel: 0, torus: car.tune.wheels, alloy: Math.round(car.tune.wheels * 1.5) };
-  const price = prices[kind];
-  if (state.money < price) { showToast('🔒 Не хватает на диски', 'err'); return; }
-  state.money -= price;
-  cs.wheels = kind;
-  saveState(); render(); renderTuning();
-  if (kind === 'steel') showToast('Установлены штампы', '');
-  else if (kind === 'torus') showToast(`⚙️ Торусы! +${formatRate(tunePassiveBonus(car, 'wheels') * boostMult())} ₽/сек`, 'ok');
-  else showToast(`✨ Литые! +${formatRate(tunePassiveBonus(car, 'wheels') * boostMult())} ₽/сек`, 'ok');
+  if (state.money < prices[kind]) { showToast('🔒 Не хватает', 'err'); return; }
+  state.money -= prices[kind]; cs.wheels = kind;
+  state.stats.totalTune++;
+  updateQuestProgress('wheels', 1);
+  saveState(); render(); renderTuning(); checkAchievements();
+  showToast('⚙️ Диски установлены', 'ok');
 }
 function toggleTint() {
   if (!state.currentCar) return;
   const car = getCar(state.currentCar);
   const cs = carState(state.currentCar);
-  if (cs.tint) { cs.tint = false; saveState(); render(); renderTuning(); showToast('Тонировка снята', ''); return; }
-  if (state.money < car.tune.tint) { showToast('🔒 Не хватает денег', 'err'); return; }
+  if (cs.tint) { cs.tint = false; saveState(); render(); renderTuning(); showToast('Снято'); return; }
+  if (state.money < car.tune.tint) { showToast('🔒 Не хватает', 'err'); return; }
   state.money -= car.tune.tint; cs.tint = true;
-  saveState(); render(); renderTuning();
-  showToast(`🌑 Тонировка! +${formatRate(tuneClickBonus(car, 'tint') * boostMult())} ₽/тап · +${formatRate(tunePassiveBonus(car, 'tint') * boostMult())} ₽/сек`, 'ok');
+  state.stats.totalTune++;
+  updateQuestProgress('tint', 1);
+  saveState(); render(); renderTuning(); checkAchievements();
+  showToast('🌑 Тонировано!', 'ok');
 }
 function toggleLowering() {
   if (!state.currentCar) return;
   const car = getCar(state.currentCar);
   const cs = carState(state.currentCar);
-  if (cs.lowering) {
-    cs.lowering = false;
-    saveState(); render(); renderTuning();
-    showToast('Занижение убрано', '');
-    return;
-  }
-  if (state.money < car.tune.lowering) { showToast('🔒 Не хватает на занижение', 'err'); return; }
-  state.money -= car.tune.lowering;
-  cs.lowering = true;
-  saveState(); render(); renderTuning();
-  showToast(`⬇️ БПАН! +${formatRate(tuneClickBonus(car, 'lowering') * boostMult())} ₽/тап · +${formatRate(tunePassiveBonus(car, 'lowering') * boostMult())} ₽/сек`, 'bpan');
+  if (cs.lowering) { cs.lowering = false; saveState(); render(); renderTuning(); showToast('Убрано'); return; }
+  if (state.money < car.tune.lowering) { showToast('🔒 Не хватает', 'err'); return; }
+  state.money -= car.tune.lowering; cs.lowering = true;
+  state.stats.totalTune++;
+  saveState(); render(); renderTuning(); checkAchievements();
+  showToast('⬇️ БПАН!', 'bpan');
 }
 function repairRust(amount) {
   if (!state.currentCar) return;
@@ -1756,20 +1786,77 @@ function repairRust(amount) {
   const cs = carState(state.currentCar);
   const actual = Math.min(amount, cs.rust);
   const cost = Math.ceil(actual * car.tune.rust);
-  if (state.money < cost) { showToast('🔒 Не хватает денег', 'err'); return; }
-  const beforeClick = clickIncome(state.currentCar);
-  const beforePass  = passiveOf(state.currentCar);
-  state.money -= cost;
-  cs.rust = Math.max(0, cs.rust - actual);
+  if (state.money < cost) { showToast('🔒 Не хватает', 'err'); return; }
+  state.money -= cost; cs.rust = Math.max(0, cs.rust - actual);
   saveState(); render(); renderTuning();
-  const dClick = clickIncome(state.currentCar) - beforeClick;
-  const dPass  = passiveOf(state.currentCar)  - beforePass;
-  if (cs.rust === 0) showToast(`🎉 Как новая! +${formatRate(dClick)} ₽/тап · +${formatRate(dPass)} ₽/сек`, 'ok');
-  else showToast(`🛠️ −${Math.round(actual)}% ржавчины · +${formatRate(dClick)} ₽/тап`, 'ok');
+  showToast('🛠️ −' + Math.round(actual) + '%', 'ok');
+}
+
+function openPrestige() {
+  const content = document.getElementById('sheetContent');
+  const ownedCount = Object.keys(state.cars).length;
+  const canPrestige = ownedCount >= 21;
+  const nextMult = state.prestige.multiplier + 0.5;
+  let html = '<div class="sheet-title">🌟 Престиж</div>';
+  html += '<div class="prestige-card"><h3>✨ Перерождение</h3><p>Сбрось всё и получи <b>постоянный бонус</b>.</p><div class="boost-line">Текущий: ×' + state.prestige.multiplier.toFixed(1) + '</div><div class="boost-line">После: ×' + nextMult.toFixed(1) + '</div><p style="opacity:.7; margin-top:10px;">Машин: ' + ownedCount + ' / 21</p></div>';
+  html += '<button class="prestige-btn" ' + (canPrestige ? '' : 'disabled') + ' onclick="doPrestige()">' + (canPrestige ? '🌟 ПЕРЕРОДИТЬСЯ' : '🔒 Собери все 21 машину') + '</button>';
+  html += '<div style="font-size:11px; opacity:.6; margin-top:14px; text-align:center;">Престижей: ' + state.prestige.count + '</div>';
+  content.innerHTML = html;
+  document.getElementById('sheet').classList.add('show');
+}
+function doPrestige() {
+  if (Object.keys(state.cars).length < 21) return;
+  if (!confirm('Точно престиж? Всё сбросится кроме бонуса ×' + (state.prestige.multiplier + 0.5).toFixed(1))) return;
+  state.prestige.count += 1;
+  state.prestige.multiplier = +(state.prestige.multiplier + 0.5).toFixed(1);
+  state.money = 500; state.cars = {}; state.currentCar = null; state.boostUntil = 0;
+  state.quests.list = []; state.chest.lastOpen = 0;
+  state.engine.level = 0; state.transmission.level = 0;
+  refreshQuests(); saveState(); render();
+  document.getElementById('sheet').classList.remove('show');
+  showToast('🌟 Престиж! Постоянный бонус ×' + state.prestige.multiplier.toFixed(1), 'gold');
+}
+
+let activeTab = null;
+const sheet = document.getElementById('sheet');
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    if (activeTab === tab) { sheet.classList.remove('show'); activeTab = null; document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active')); return; }
+    activeTab = tab;
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b === btn));
+    if (tab === 'garage') renderGarage();
+    if (tab === 'market') renderMarket();
+    if (tab === 'tuning') renderTuning();
+    if (tab === 'prestige') openPrestige();
+    sheet.classList.add('show');
+  });
+});
+sheet.addEventListener('click', (e) => {
+  if (e.target === sheet) { sheet.classList.remove('show'); activeTab = null; document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active')); }
+});
+
+const splashScreen = document.getElementById('splashScreen');
+const rulesScreen = document.getElementById('rulesScreen');
+const gameScreen = document.getElementById('gameScreen');
+document.getElementById('splashPlay').addEventListener('click', () => { splashScreen.classList.remove('show'); rulesScreen.classList.add('show'); });
+document.getElementById('rulesStart').addEventListener('click', () => { rulesScreen.classList.remove('show'); gameScreen.classList.add('show'); startGame(); });
+
+let gameStarted = false;
+function startGame() {
+  if (gameStarted) return;
+  gameStarted = true;
+  setInterval(() => {
+    const inc = totalPassive() / 10;
+    if (inc > 0) { state.money += inc; state.stats.totalEarned += inc; moneyEl.textContent = formatMoney(state.money); }
+  }, 100);
+  setInterval(saveState, 5000);
+  window.addEventListener('beforeunload', saveState);
 }
 
 let toastTimer = null;
-function showToast(text, type = '') {
+function showToast(text, type) {
+  type = type || '';
   const t = document.getElementById('toast');
   t.textContent = text;
   t.className = 'toast show ' + type;
@@ -1777,35 +1864,25 @@ function showToast(text, type = '') {
   toastTimer = setTimeout(() => { t.className = 'toast ' + type; }, 2600);
 }
 
-async function initVK() {
-  if (typeof vkBridge === 'undefined') return;
-  try {
-    await vkBridge.send('VKWebAppInit');
-    vkBridge.send('VKWebAppSetViewSettings', {
-      status_bar_style: 'light', action_bar_color: '#0b1120', navigation_bar_color: '#0b1120'
-    }).catch(() => {});
-  } catch (e) {}
-}
-
-(async function start() {
-  await initVK();
-  const saved = await loadState();
+(async function init() {
+  try { if (window.vkBridge && typeof vkBridge.send === 'function') await vkBridge.send('VKWebAppInit'); } catch (e) {}
+  const saved = loadState();
   if (saved && typeof saved.money === 'number') {
-    state = saved;
-    if (!state.cars) state.cars = {};
-    if (typeof state.boostUntil !== 'number') state.boostUntil = 0;
-    Object.keys(state.cars).forEach(id => {
-      if (!getCar(id)) { delete state.cars[id]; return; }
-      const cs = state.cars[id];
-      if (typeof cs.lowering !== 'boolean') cs.lowering = false;
-      if (typeof cs.wheels === 'boolean') cs.wheels = cs.wheels ? 'alloy' : 'steel';
-      if (typeof cs.wheels !== 'string') cs.wheels = 'steel';
-    });
-    if (state.currentCar && !getCar(state.currentCar)) state.currentCar = null;
+    state = Object.assign(state, saved);
+    state.achievements = state.achievements || {};
+    state.quests = state.quests || { list: [], lastRefresh: 0 };
+    state.daily = state.daily || { lastClaim: 0, streak: 0 };
+    state.chest = state.chest || { lastOpen: 0 };
+    state.boss = state.boss || { lastDefeat: 0, currentHp: BOSS_MAX_HP, maxHp: BOSS_MAX_HP };
+    state.stats = state.stats || { totalClicks: 0, totalEarned: 0, totalTune: 0, chestsOpened: 0, bossDefeated: 0, racesWon: 0 };
+    state.prestige = state.prestige || { count: 0, multiplier: 1 };
+    state.engine = state.engine || { level: 0 };
+    state.transmission = state.transmission || { level: 0 };
+    state.race = state.race || { lastRace: 0, wins: 0, losses: 0, streak: 0 };
   }
-  render();
-  renderBoostUI();
+  refreshQuests(); render(); renderBoostUI(); renderChest();
 })();
+setInterval(() => { checkAchievements(); updateTopBadges(); }, 5000);
 </script>
 </body>
 </html>
